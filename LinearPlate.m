@@ -20,8 +20,12 @@ loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
 kappa = sqrt(D / (rho * H* Lx^2 * Ly^2)); % pg.342 eq.12.3
 % kappa = 20;
+
 c = sqrt(T/(rho*H));
 gamma = sqrt(T/(rho*H*Lx*Ly));  
+% h = sqrt(kappa*k/mu); % find grid spacing
+% mu = kappa*k/(h^2);
+
 
 % set scheme for loss parameters 
 % NOTE: the equations are the sama as for a string
@@ -32,14 +36,14 @@ zeta2 = (-gamma^2+sqrt(gamma^4+4*kappa^2*(2*pi*loss(2,1))^2))/(2*kappa^2);
 sigma0 = 6*log(10)*(-zeta2/loss(1,2)+zeta1/loss(2,2))/(zeta1-zeta2);
 sigma1 = 6*log(10)*(1/loss(1,2)-1/loss(2,2))/(zeta1-zeta2);
 
-% h = sqrt(kappa*k/mu); % find grid spacing
-h = 2*sqrt((+ sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 4*kappa*2*k^2))/2);
-mu = kappa*k/(h^2);
-       
+h = 2*sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 4*kappa*2*k^2))/2);
 
-Nx = floor(sqrt(r)/h);        % number of x-subdivisions of spatial domain
-Ny = floor(1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
-h = sqrt(r)/Nx;
+
+
+Nx = floor(Lx * sqrt(r)/h);        % number of x-subdivisions of spatial domain
+Ny = floor(Ly * 1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
+h = sqrt(r)/min(Nx, Ny);
+
 
 % initialize time-step variables
 uNext = zeros(Nx,Ny);
