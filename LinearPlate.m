@@ -4,14 +4,14 @@ clc
 
 fs = 44100;
 k = 1/fs;
-durration = 1;          % synthesised sound lenght in s
-dur = fs*durration;
+duration = 1;          % synthesised sound duration in s
+dur = fs*duration;
 f0 = 100;
 H = 0.002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
-L = 0.2;
+L = 0.35;
 r = 1.3;                % grid aspect ratio
 mu = 0.25;              % free parameter
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
