@@ -11,18 +11,17 @@ H = 0.002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
-L = 0.35;
-r = 1.3;                % grid aspect ratio
+r = 1.2;                % grid aspect ratio
+Lx = r*0.4;
+Ly = (1/r)*0.4;
 mu = 0.25;              % free parameter
+T = 40;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
-kappa = sqrt(D / (rho * H* L^4)); % pg.342 eq.12.3
+kappa = sqrt(D / (rho * H* Lx^2 * Ly^2)); % pg.342 eq.12.3
 % kappa = 20;
-
-h = sqrt(kappa*k/mu); % find grid spacing
-gamma = 2*f0;         
-
-mu = kappa*k/(h^2);
+c = sqrt(T/(rho*H));
+gamma = sqrt(T/(rho*H*Lx*Ly));  
 
 % set scheme for loss parameters 
 % NOTE: the equations are the sama as for a string
@@ -32,6 +31,11 @@ zeta1 = (-gamma^2+sqrt(gamma^4+4*kappa^2*(2*pi*loss(1,1))^2))/(2*kappa^2);
 zeta2 = (-gamma^2+sqrt(gamma^4+4*kappa^2*(2*pi*loss(2,1))^2))/(2*kappa^2);
 sigma0 = 6*log(10)*(-zeta2/loss(1,2)+zeta1/loss(2,2))/(zeta1-zeta2);
 sigma1 = 6*log(10)*(1/loss(1,2)-1/loss(2,2))/(zeta1-zeta2);
+
+% h = sqrt(kappa*k/mu); % find grid spacing
+h = 2*sqrt((+ sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 4*kappa*2*k^2))/2);
+mu = kappa*k/(h^2);
+       
 
 Nx = floor(sqrt(r)/h);        % number of x-subdivisions of spatial domain
 Ny = floor(1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
