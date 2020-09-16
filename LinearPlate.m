@@ -11,10 +11,9 @@ H = 0.002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
-r = 1.2;                % grid aspect ratio
+r = 1;                % grid aspect ratio
 Lx = r*0.4;
 Ly = (1/r)*0.4;
-mu = 0.25;              % free parameter
 T = 40;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
@@ -24,7 +23,6 @@ kappa = sqrt(D / (rho * H* Lx^2 * Ly^2)); % pg.342 eq.12.3
 c = sqrt(T/(rho*H));
 gamma = sqrt(T/(rho*H*Lx*Ly));  
 % h = sqrt(kappa*k/mu); % find grid spacing
-% mu = kappa*k/(h^2);
 
 
 % set scheme for loss parameters 
