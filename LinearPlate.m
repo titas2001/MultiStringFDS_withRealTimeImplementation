@@ -33,7 +33,7 @@ zeta2 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(2,1))^2))/(2*kappasq);
 sigma0 = 6*log(10)*(-zeta2/loss(1,2)+zeta1/loss(2,2))/(zeta1-zeta2);
 sigma1 = 6*log(10)*(1/loss(1,2)-1/loss(2,2))/(zeta1-zeta2);
 
-h = 2*sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 4*kappasq*k^2))/2);
+h = sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 16*kappasq*k^2)));
 
 
 
