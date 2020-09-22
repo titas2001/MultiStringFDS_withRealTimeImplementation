@@ -1,7 +1,7 @@
 clear all;
 close all;
 clc
-
+tic
 fs = 44100;
 k = 1/fs;
 duration = 1;          % synthesised sound duration in s
@@ -17,24 +17,23 @@ Ly = (1/r)*0.4;
 T = 40;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
-kappa = sqrt(D / (rho * H* Lx^2 * Ly^2)); % pg.342 eq.12.3
-% kappa = 20;
+kappasq = D / (rho * H * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
+
 
 c = sqrt(T/(rho*H));
 gamma = sqrt(T/(rho*H*Lx*Ly));  
-% h = sqrt(kappa*k/mu); % find grid spacing
 
 
 % set scheme for loss parameters 
 % NOTE: the equations are the sama as for a string
 % zeta0,1  pg.189 Practical setting for decay times
 % sigma0,1 pg.189 eq.7.29
-zeta1 = (-gamma^2+sqrt(gamma^4+4*kappa^2*(2*pi*loss(1,1))^2))/(2*kappa^2);
-zeta2 = (-gamma^2+sqrt(gamma^4+4*kappa^2*(2*pi*loss(2,1))^2))/(2*kappa^2);
+zeta1 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(1,1))^2))/(2*kappasq);
+zeta2 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(2,1))^2))/(2*kappasq);
 sigma0 = 6*log(10)*(-zeta2/loss(1,2)+zeta1/loss(2,2))/(zeta1-zeta2);
 sigma1 = 6*log(10)*(1/loss(1,2)-1/loss(2,2))/(zeta1-zeta2);
 
-h = 2*sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 4*kappa*2*k^2))/2);
+h = 2*sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 4*kappasq*k^2))/2);
 
 
 
@@ -53,6 +52,7 @@ u(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
     0.1*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
 figure(1)
 mesh(u)
+zlim([0,16]);
 out = zeros(length(1:dur),1);
 
 l = 3:Nx-2;
@@ -61,7 +61,7 @@ for n = 1:dur
 %     uNext(l,m) = (2-20*mu^2)*u(l,m) + 8*mu^2 * (u(l,m+1) + u(l,m-1) + u(l+1,m) + u(l-1,m)) - ...
 %         2*mu^2 * (u(l+1,m+1) + u(l-1,m-1) + u(l+1,m-1) + u(l-1,m+1)) - uPrev(l,m) - ...
 %         mu^2 *(u(l,m+2) + u(l,m-2) + u(l+2,m) + u(l-2,m)); % eq. at pg.347 
-    uNext(l,m) = (1/(k*sigma0 + 1))*(((-(kappa^2)/h^4)*((u(l+2,m) + u(l-2,m) + u(l,m+2) + u(l,m-2)) + ...
+    uNext(l,m) = (1/(k*sigma0 + 1))*(((-(kappasq)/h^4)*((u(l+2,m) + u(l-2,m) + u(l,m+2) + u(l,m-2)) + ...
         2*(u(l+1,m+1) + u(l+1,m-1) + u(l-1,m+1) + u(l-1,m-1)) - ...
         8*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1)) + 20*u(l,m)) + ...
         (gamma^2/h^2)*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1) - 4*u(l,m)) + ...
@@ -78,5 +78,6 @@ for n = 1:dur
     uPrev  = u;
     u = uNext;
 end
+toc
 figure(2)
 plot(out)
