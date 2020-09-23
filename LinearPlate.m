@@ -11,14 +11,14 @@ H = 0.002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
-r = 1;                % grid aspect ratio
+r = 1.3;                % grid aspect ratio
 Lx = r*0.4;
 Ly = (1/r)*0.4;
 T = 40;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
 kappasq = D / (rho * H * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
-
+v0 = 1;
 
 c = sqrt(T/(rho*H));
 gamma = sqrt(T/(rho*H*Lx*Ly));  
@@ -37,8 +37,8 @@ h = sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 16*kappasq*
 
 
 
-Nx = floor(Lx * sqrt(r)/h);        % number of x-subdivisions of spatial domain
-Ny = floor(Ly * 1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
+Nx = floor(sqrt(r)/h);        % number of x-subdivisions of spatial domain
+Ny = floor(1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
 h = sqrt(r)/min(Nx, Ny);
 
 
@@ -47,9 +47,9 @@ uNext = zeros(Nx,Ny);
 u = zeros(Nx,Ny);
 uPrev = zeros(Nx,Ny);
 
-% excite at a current time-step with a hamming_3d at the center
+% excite at a current time-step with a hamming_3d velocity at the center
 u(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
-    0.1*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
+    k*v0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
 figure(1)
 mesh(u)
 zlim([0,16]);
@@ -57,6 +57,11 @@ out = zeros(length(1:dur),1);
 
 l = 3:Nx-2;
 m = 3:Ny-2;
+
+% figure(3)
+scale = min(Nx,Ny);
+
+tic
 for n = 1:dur
 %     uNext(l,m) = (2-20*mu^2)*u(l,m) + 8*mu^2 * (u(l,m+1) + u(l,m-1) + u(l+1,m) + u(l-1,m)) - ...
 %         2*mu^2 * (u(l+1,m+1) + u(l-1,m-1) + u(l+1,m-1) + u(l-1,m+1)) - uPrev(l,m) - ...
@@ -69,11 +74,13 @@ for n = 1:dur
         (uPrev(l+1,m) + uPrev(l-1,m) + uPrev(l,m+1) + uPrev(l,m-1) - 4*uPrev(l,m))))*k^2 + ...
         k*sigma0*uPrev(l,m) + 2*u(l,m) - uPrev(l,m));
         
-        
     out(n) = uNext(floor(Nx/2),floor(Ny/2));
-%     plot(uNext);
-%     ylim([-1,1]);
-%     drawnow;
+    
+%     drawnow
+%     variable = uNext;
+%     mesh(variable)
+%     zlim([-scale,scale]);
+%     time = n/44100
     
     uPrev  = u;
     u = uNext;
