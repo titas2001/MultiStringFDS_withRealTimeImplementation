@@ -7,7 +7,7 @@ k = 1/fs;
 duration = 1;          % synthesised sound duration in s
 dur = fs*duration;
 f0 = 100;
-R = 0.1;
+R = 3;
 
 
 

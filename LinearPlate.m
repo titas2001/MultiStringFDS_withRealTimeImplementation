@@ -18,7 +18,7 @@ T = 40;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
 kappasq = D / (rho * H * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
-v0 = 1;
+v0 = -10;
 
 c = sqrt(T/(rho*H));
 gamma = sqrt(T/(rho*H*Lx*Ly));  
@@ -52,7 +52,7 @@ u(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
     k*v0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
 figure(1)
 mesh(u)
-zlim([0,16]);
+zlim([0,1]);
 out = zeros(length(1:dur),1);
 
 l = 3:Nx-2;
@@ -75,13 +75,13 @@ for n = 1:dur
         k*sigma0*uPrev(l,m) + 2*u(l,m) - uPrev(l,m));
         
     out(n) = uNext(floor(Nx/2),floor(Ny/2));
-    
+     
 %     drawnow
 %     variable = uNext;
 %     mesh(variable)
-%     zlim([-scale,scale]);
+%     zlim([-scale/1000,scale/1000]);
 %     time = n/44100
-    
+     
     uPrev  = u;
     u = uNext;
 end

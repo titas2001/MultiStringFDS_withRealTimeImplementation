@@ -56,7 +56,7 @@ for n = 1:dur
         (kappa^2 * (u(l+2) - 4*u(l+1) + 6*u(l) - 4*u(l-1) + u(l-2))/h^4) + ...
         (2*sigma1 * (u(l+1) - 2*u(l) + u(l-1) - uPrev(l+1) + 2*uPrev(l) - uPrev(l-1))/k*h^2))*k^2 + ...
         sigma0*k*uPrev(l) + 2*u(l) - uPrev(l)); % eq. 7.30(a) pg.190 
-    out(n) = uNext(floor(outPos));
+    out(n) = uNext(outPos);
 %     plot(uNext);
 %     ylim([-1,1]);
 %     drawnow;
