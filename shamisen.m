@@ -2,10 +2,10 @@ clear all;
 close all;
 clc
 
-fs = 44100;
+fs = 44100;             % sampling freq
 f0 = 100;               % fundamental freq
 B = 0.0001;             % inharmonicity parameter (>0)x`
-k = 1/fs;
+k = 1/fs;               % time step
 T0 = 60;                % applied string tension
 T = 40;                 % applied plate tension
 rhoS = 7700;            % material density of the string
@@ -18,11 +18,11 @@ LS = 1;                 % scaling lenght
 E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
-Lx = r*0.4;
-Ly = (1/r)*0.4;
-durration = 1;          % synthesised sound lenght in s
-dur = fs*durration;
-gammaS = 2*f0;           % scaling for string
+Lx = r*0.4;             % length of plate in x direction
+Ly = (1/r)*0.4;         % length of plate in y direction
+durration = 1;          % synthesised sound lenght in seconds
+dur = fs*durration;     % synthesised sound lenght in samples
+gammaS = 2*f0;          % scaling for a string
 gammaP = sqrt(T/(rhoP*H*Lx*Ly));  
 theta = 0.575;          % free parameter for the implicit scheme
 R = 1;                  % resistance in mass spring
@@ -97,14 +97,14 @@ for n = 1:dur
     
 %     uMNext(lM) = -4*pi^2*f0^2*k^2*uM(lM) - R*k*(uM(lM) - uMPrev(lM)) + 2*uM(lM) - uMPrev(lM);
     
-    uSNext(lS) = (1/(sigmaS0*k + 1)) * (((gammaS^2 * (uS(lS+1) - 2*uS(lS) + uS(lS-1))/hS^2) - ...
-        (kappaS^2 * (uS(lS+2) - 4*uS(lS+1) + 6*uS(lS) - 4*uS(lS-1) + uS(lS-2))/hS^4) + ...
-        (2*sigmaS1 * (uS(lS+1) - 2*uS(lS) + uS(lS-1) - uSPrev(lS+1) + 2*uSPrev(lS) - uSPrev(lS-1))/k*hS^2))*k^2 + ...
-        sigmaS0*k*uSPrev(lS) + 2*uS(lS) - uSPrev(lS)); % eq. 7.30(a) pg.190 
+%     uSNext(lS) = (1/(sigmaS0*k + 1)) * (((gammaS^2 * (uS(lS+1) - 2*uS(lS) + uS(lS-1))/hS^2) - ...
+%         (kappaS^2 * (uS(lS+2) - 4*uS(lS+1) + 6*uS(lS) - 4*uS(lS-1) + uS(lS-2))/hS^4) + ...
+%         (2*sigmaS1 * (uS(lS+1) - 2*uS(lS) + uS(lS-1) - uSPrev(lS+1) + 2*uSPrev(lS) - uSPrev(lS-1))/k*hS^2))*k^2 + ...
+%         sigmaS0*k*uSPrev(lS) + 2*uS(lS) - uSPrev(lS)); % eq. 7.30(a) pg.190 
     
 %     out(n) = uPNext(floor(Nx/2),floor(Ny/2)); % plate
 %     out(n) = uMNext(lM);                      % mass spring
-    out(n) = uSNext(outPos);                     % spring
+%     out(n) = uSNext(outPos);                  % spring
     % update the state variables
     uSPrev  = uS;
     uS = uSNext;    
