@@ -29,6 +29,7 @@ R = 1;                  % resistance in mass spring
 lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 vP0 = -10;
+M = 0.03;
 %
 kappaS=sqrt(B)*(gammaS/pi);
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
@@ -85,7 +86,16 @@ lP = 3:Nx-2;
 mP = 3:Ny-2;
 lS = 3:NS-2;
 lM = 1;
+lMc = 1;
+lSc = NS - floor(NS/8);
 for n = 1:dur
+    Fsm = (1/(hS^3*(sigmaS0*k + 1)*(rhoS*Area*hS + M)))*(4*Area*rhoS*M * ((sigmaS0*uM(lMc)*k^3 * pi^2 *f0^2 + ...
+        ((R*(uM(lMc)-uMPrev(lMc))*sigmaS0)/4 + pi^2 * f0^2 * uM(lMc))*k^2 + ...
+        ((-uM(lMc)/2 + uSPrev(lSc)/4 + uMPrev(lMc)/4)*sigmaS0 + (R*(uM(lMc) - uMPrev(lMc)))/4)*k - ...
+        uM(lMc)/2 + uS(lSc)/2 - uSPrev(lSc)/4 + uMPrev(lMc)/4)*hS^4 - ...
+        ((gammaS^2 * (uS(lSc) - uS(lSc+1)/2 - uS(lSc-1)/2)*k)/2 + sigmaS1*(uS(lSc) - uS(lSc+1)/2 - uS(lSc-1)/2 - ...
+        uSPrev(lSc) + uSPrev(lSc+1)/2 + uSPrev(lSc-1)/2))*k*hS^2 - (3* (uS(lSc) - 2*uS(lSc+1)/3 + uS(lSc+2)/6 - ...
+        2*uS(lSc-1)/3 + uS(lSc-2)/6)*kappaS^2 * k^2)/2));
     
 %     uPNext(lP,mP) = (1/(k*sigmaP0 + 1))*(((-(kappaPsq)/hP^4)*((uP(lP+2,mP) + uP(lP-2,mP) + uP(lP,mP+2) + uP(lP,mP-2)) + ...
 %         2*(uP(lP+1,mP+1) + uP(lP+1,mP-1) + uP(lP-1,mP+1) + uP(lP-1,mP-1)) - ...
@@ -95,16 +105,21 @@ for n = 1:dur
 %         (uPPrev(lP+1,mP) + uPPrev(lP-1,mP) + uPPrev(lP,mP+1) + uPPrev(lP,mP-1) - 4*uPPrev(lP,mP))))*k^2 + ...
 %         k*sigmaP0*uPPrev(lP,mP) + 2*uP(lP,mP) - uPPrev(lP,mP));
     
-%     uMNext(lM) = -4*pi^2*f0^2*k^2*uM(lM) - R*k*(uM(lM) - uMPrev(lM)) + 2*uM(lM) - uMPrev(lM);
+
     
-%     uSNext(lS) = (1/(sigmaS0*k + 1)) * (((gammaS^2 * (uS(lS+1) - 2*uS(lS) + uS(lS-1))/hS^2) - ...
-%         (kappaS^2 * (uS(lS+2) - 4*uS(lS+1) + 6*uS(lS) - 4*uS(lS-1) + uS(lS-2))/hS^4) + ...
-%         (2*sigmaS1 * (uS(lS+1) - 2*uS(lS) + uS(lS-1) - uSPrev(lS+1) + 2*uSPrev(lS) - uSPrev(lS-1))/k*hS^2))*k^2 + ...
-%         sigmaS0*k*uSPrev(lS) + 2*uS(lS) - uSPrev(lS)); % eq. 7.30(a) pg.190 
+    uSNext(lS) = (1/(sigmaS0*k + 1)) * (((gammaS^2 * (uS(lS+1) - 2*uS(lS) + uS(lS-1))/hS^2) - ...
+        (kappaS^2 * (uS(lS+2) - 4*uS(lS+1) + 6*uS(lS) - 4*uS(lS-1) + uS(lS-2))/hS^4) + ...
+        (2*sigmaS1 * (uS(lS+1) - 2*uS(lS) + uS(lS-1) - uSPrev(lS+1) + 2*uSPrev(lS) - uSPrev(lS-1))/k*hS^2))*k^2 + ...
+        sigmaS0*k*uSPrev(lS) + 2*uS(lS) - uSPrev(lS)); % eq. 7.30(a) pg.190 
+    uSNext(lSc) = uSNext(lSc) - Fsm/(rhoS * Area *hS);
+    
+    uMNext(lM) = -4*pi^2*f0^2*k^2*uM(lM) - R*k*(uM(lM) - uMPrev(lM)) + 2*uM(lM) - uMPrev(lM);
+    uMNext(lMc) = uMNext(lMc) + Fsm/M;
+    
     
 %     out(n) = uPNext(floor(Nx/2),floor(Ny/2)); % plate
 %     out(n) = uMNext(lM);                      % mass spring
-%     out(n) = uSNext(outPos);                  % spring
+    out(n) = uSNext(outPos);                  % spring
     % update the state variables
     uSPrev  = uS;
     uS = uSNext;    
