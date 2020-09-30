@@ -54,9 +54,9 @@ for n = 1:dur
         hB^2 * (hB^2 *uBPrev(lB)*sigmaB0 +4*(uBPrev(lB) - uBPrev(lB+1)/2 - uBPrev(lB-1)/2 - uB(lB) + uB(lB+1)/2 + uB(lB-1)/2)*sigmaB1)*k - ...
         hB^4 * (uBPrev(lB) - 2*uB(lB)));
     % find virtual grid points
-    uB0 = 2*uB(3)-uB(4);                    % uB(0)
+    uB0 = 2*uB(1)-uB(2);                    % uB(0)
     uBm1 = 2*(uB0-uB(2))+uB(3);             % uB(-1)
-    uBPrev0 = 2*uBPrev(3)-uBPrev(4);        % uBPrev(0)
+    uBPrev0 = 2*uBPrev(1)-uBPrev(2);        % uBPrev(0)
     uBNp1 = 2*uB(NB) - uB(NB-1);            % uB(N+1)
     uBNp2 = 2*(uBNp1 - uB(NB-1)) + uB(NB-2);% uB(N+2)
     uBPrevNp1 = 2*uBPrev(NB) - uBPrev(NB-1);% uBPrev(N+1)
@@ -77,10 +77,10 @@ for n = 1:dur
     
     
     outB(n) = uBNext(outPosB);
-    plot(uBNext);
-    ylim([-1,1]);
-    drawnow;
-%     
+%     plot(uBNext);
+%     ylim([-1,1]);
+%     drawnow;
+     
     uBPrev  = uB;
     uB = uBNext;
 
