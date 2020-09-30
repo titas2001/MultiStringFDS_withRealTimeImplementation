@@ -53,11 +53,28 @@ for n = 1:dur
     uBNext(lB) = 1/(hB^4 * (k*sigmaB0 + 1))*(-6*(uB(lB) - 2*uB(lB+1)/3 + uB(lB+2)/6 - 2*uB(lB-1)/3 + uB(lB-2)/6)*kappaB^2 *k^2 + ...
         hB^2 * (hB^2 *uBPrev(lB)*sigmaB0 +4*(uBPrev(lB) - uBPrev(lB+1)/2 - uBPrev(lB-1)/2 - uB(lB) + uB(lB+1)/2 + uB(lB-1)/2)*sigmaB1)*k - ...
         hB^4 * (uBPrev(lB) - 2*uB(lB)));
-    % update at boundaries
-    uBNext(1) = (-hB*uBNext(3) + 6*uBNext(3) - 4*uBNext(4))/(hB + 2);
-    uBNext(2) = -uBNext(4) + 2*uBNext(3);
-    uBNext(NB) = (-hB*uBNext(NB-2) + 6*uBNext(NB-2) - 4*uBNext(NB-3))/(hB + 2);
-    uBNext(NB-1) = -uBNext(NB-3) + 2*uBNext(NB-2);
+    % find virtual grid points
+    uB0 = 2*uB(3)-uB(4);
+    uBm1 = 2*(uB0-uB(2))+uB(3);
+    uBPrev0 = 2*uBPrev(3)-uBPrev(4);
+    uBNp1 = 2*uB(NB) - uB(NB-1);
+    uBNp2 = 2*(uBNp1 - uB(NB-1)) + uB(NB-2);
+    uBPrevNp1 = 2*uBPrev(NB) - uBPrev(NB-1);
+    % solve for 1, 2, N-1, N
+    uBNext(2) = 1/(hB^4 * (k*sigmaB0 + 1))*(-6*(uB(2) - 2*uB(2+1)/3 + uB(2+2)/6 - 2*uB(2-1)/3 + uB0/6)*kappaB^2 *k^2 + ...
+        hB^2 * (hB^2 *uBPrev(2)*sigmaB0 +4*(uBPrev(2) - uBPrev(2+1)/2 - uBPrev(2-1)/2 - uB(2) + uB(2+1)/2 + uB(2-1)/2)*sigmaB1)*k - ...
+        hB^4 * (uBPrev(2) - 2*uB(2)));
+    uBNext(1) = 1/(hB^4 * (k*sigmaB0 + 1))*(-6*(uB(1) - 2*uB(1+1)/3 + uB(1+2)/6 - 2*uB0/3 + uBm1/6)*kappaB^2 *k^2 + ...
+        hB^2 * (hB^2 *uBPrev(1)*sigmaB0 +4*(uBPrev(1) - uBPrev(1+1)/2 - uBPrev0/2 - uB(1) + uB(1+1)/2 + uB0/2)*sigmaB1)*k - ...
+        hB^4 * (uBPrev(1) - 2*uB(1)));
+    uBNext(NB-1) = 1/(hB^4 * (k*sigmaB0 + 1))*(-6*(uB(NB-1) - 2*uB(NB)/3 + uBNp1/6 - 2*uB(NB-2)/3 + uB(NB-3)/6)*kappaB^2 *k^2 + ...
+        hB^2 * (hB^2 *uBPrev(NB-1)*sigmaB0 +4*(uBPrev(NB-1) - uBPrev(NB)/2 - uBPrev(NB-2)/2 - uB(NB-1) + uB(NB)/2 + uB(NB-2)/2)*sigmaB1)*k - ...
+        hB^4 * (uBPrev(NB-1) - 2*uB(NB-1)));
+    uBNext(NB) = 1/(hB^4 * (k*sigmaB0 + 1))*(-6*(uB(NB) - 2*uBNp1/3 + uBNp2/6 - 2*uB(NB-1)/3 + uB(NB-2)/6)*kappaB^2 *k^2 + ...
+        hB^2 * (hB^2 *uBPrev(NB)*sigmaB0 +4*(uBPrev(NB) - uBPrevNp1/2 - uBPrev(NB-1)/2 - uB(NB) + uBNp1/2 + uB(NB-1)/2)*sigmaB1)*k - ...
+        hB^4 * (uBPrev(NB) - 2*uB(NB)));
+    
+    
     
     outB(n) = uBNext(outPosB);
     plot(uBNext);
@@ -65,7 +82,7 @@ for n = 1:dur
     drawnow;
 %     
     uBPrev  = uB;
-    uB(lB) = uBNext(lB);
+    uB = uBNext;
 
 end
 figure(2)
