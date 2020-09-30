@@ -54,13 +54,13 @@ for n = 1:dur
         hB^2 * (hB^2 *uBPrev(lB)*sigmaB0 +4*(uBPrev(lB) - uBPrev(lB+1)/2 - uBPrev(lB-1)/2 - uB(lB) + uB(lB+1)/2 + uB(lB-1)/2)*sigmaB1)*k - ...
         hB^4 * (uBPrev(lB) - 2*uB(lB)));
     % find virtual grid points
-    uB0 = 2*uB(3)-uB(4);
-    uBm1 = 2*(uB0-uB(2))+uB(3);
-    uBPrev0 = 2*uBPrev(3)-uBPrev(4);
-    uBNp1 = 2*uB(NB) - uB(NB-1);
-    uBNp2 = 2*(uBNp1 - uB(NB-1)) + uB(NB-2);
-    uBPrevNp1 = 2*uBPrev(NB) - uBPrev(NB-1);
-    % solve for 1, 2, N-1, N
+    uB0 = 2*uB(3)-uB(4);                    % uB(0)
+    uBm1 = 2*(uB0-uB(2))+uB(3);             % uB(-1)
+    uBPrev0 = 2*uBPrev(3)-uBPrev(4);        % uBPrev(0)
+    uBNp1 = 2*uB(NB) - uB(NB-1);            % uB(N+1)
+    uBNp2 = 2*(uBNp1 - uB(NB-1)) + uB(NB-2);% uB(N+2)
+    uBPrevNp1 = 2*uBPrev(NB) - uBPrev(NB-1);% uBPrev(N+1)
+    % solve for uBNext at points 1, 2, N-1, N
     uBNext(2) = 1/(hB^4 * (k*sigmaB0 + 1))*(-6*(uB(2) - 2*uB(2+1)/3 + uB(2+2)/6 - 2*uB(2-1)/3 + uB0/6)*kappaB^2 *k^2 + ...
         hB^2 * (hB^2 *uBPrev(2)*sigmaB0 +4*(uBPrev(2) - uBPrev(2+1)/2 - uBPrev(2-1)/2 - uB(2) + uB(2+1)/2 + uB(2-1)/2)*sigmaB1)*k - ...
         hB^4 * (uBPrev(2) - 2*uB(2)));
