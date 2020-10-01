@@ -48,7 +48,11 @@ plot(u)
 % initialise output
 out = zeros(dur,1);
 outPos = floor(N/2);
-
+uSlMult = (((-2*gamma^2)/h^2 - 6*kappa^2/h^4 - 4*sigma1/(k*h^2))*k^2 + 2)/(k*sigma0 + 1);
+uSl1Mult = (gamma^2/h^2 + 4*kappa^2/h^4 + 2*sigma1/(k*h^2))*k^2/(k*sigma0 + 1);
+uSl2Mult = -1*k^2*kappa^2/((k*sigma0 + 1)*h^4);
+uSPrevlMult = ((4*sigma1*k^2)/(k*h^2) + k*sigma0 - 1)/(k*sigma0 + 1);
+uSPrevl1Mult = ((-2*sigma1*k^2)*1/(k*h^2))/(k*sigma0 + 1);
 l = 3:N-2;
 %% loopty loop 
 for n = 1:dur
@@ -56,6 +60,8 @@ for n = 1:dur
         (kappa^2 * (u(l+2) - 4*u(l+1) + 6*u(l) - 4*u(l-1) + u(l-2))/h^4) + ...
         (2*sigma1 * (u(l+1) - 2*u(l) + u(l-1) - uPrev(l+1) + 2*uPrev(l) - uPrev(l-1))/k*h^2))*k^2 + ...
         sigma0*k*uPrev(l) + 2*u(l) - uPrev(l)); % eq. 7.30(a) pg.190 
+%     uNext(l) = u(l)*uSlMult + (u(l-1) + u(l+1))*uSl1Mult + (u(l-2) + u(l+2))*uSl2Mult + ...
+%         uPrev(l)*uSPrevlMult + (uPrev(l-1)+ uPrev(l+1))*uSPrevl1Mult;
     out(n) = uNext(outPos);
 %     plot(uNext);
 %     ylim([-1,1]);
