@@ -9,12 +9,12 @@ dur = fs*duration;
 f0 = 100;
 H = 0.002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
-E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
+E = 3e+1;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
 Lx = r*0.4;
 Ly = (1/r)*0.4;
-T = 40;
+T = 40000;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
 kappasq = D / (rho * H * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
@@ -32,14 +32,20 @@ zeta1 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(1,1))^2))/(2*kappasq);
 zeta2 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(2,1))^2))/(2*kappasq);
 sigma0 = 6*log(10)*(-zeta2/loss(1,2)+zeta1/loss(2,2))/(zeta1-zeta2);
 sigma1 = 6*log(10)*(1/loss(1,2)-1/loss(2,2))/(zeta1-zeta2);
-
+sigma1 = sigma1*100;
 h = sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 16*kappasq*k^2)));
 
 
 
 Nx = floor(sqrt(r)/h);        % number of x-subdivisions of spatial domain
 Ny = floor(1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
+if Nx > 50
+    Nx = 50;
+end
+
 h = sqrt(r)/min(Nx, Ny);
+
+Ny = floor(1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
 
 
 % initialize time-step variables
@@ -61,19 +67,29 @@ m = 3:Ny-2;
 % figure(3)
 scale = min(Nx,Ny);
 
+ulMult = ((-20*kappasq/h^4 - 4*gamma^2/h^2 - 8*sigma1/(k*h^2))*k^2 + 2)/(k*sigma0 + 1); 
+ul1Mult = (8*kappasq/h^4 + gamma^2/h^2 + 2*sigma1/(k*h^2))*k^2/(k*sigma0 + 1);
+ul1dMult = (-2*kappasq*k^2)*1/h^4/(k*sigma0 + 1);
+ul2Mult = -kappasq*k^2/(h^4*(k*sigma0 + 1));
+uPrevlMult = ((8*sigma1*k^2)*1/(k*h^2) + k*sigma0 - 1)/(k*sigma0 + 1);
+uPrevl1Mult = (-2*sigma1*k^2)*1/(k*h^2)/(k*sigma0 + 1);
 tic
 for n = 1:dur
 %     uNext(l,m) = (2-20*mu^2)*u(l,m) + 8*mu^2 * (u(l,m+1) + u(l,m-1) + u(l+1,m) + u(l-1,m)) - ...
 %         2*mu^2 * (u(l+1,m+1) + u(l-1,m-1) + u(l+1,m-1) + u(l-1,m+1)) - uPrev(l,m) - ...
-%         mu^2 *(u(l,m+2) + u(l,m-2) + u(l+2,m) + u(l-2,m)); % eq. at pg.347 
-    uNext(l,m) = (1/(k*sigma0 + 1))*(((-(kappasq)/h^4)*((u(l+2,m) + u(l-2,m) + u(l,m+2) + u(l,m-2)) + ...
-        2*(u(l+1,m+1) + u(l+1,m-1) + u(l-1,m+1) + u(l-1,m-1)) - ...
-        8*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1)) + 20*u(l,m)) + ...
-        (gamma^2/h^2)*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1) - 4*u(l,m)) + ...
-        ((2*sigma1)/(k*h^2))*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1) - 4*u(l,m) - ...
-        (uPrev(l+1,m) + uPrev(l-1,m) + uPrev(l,m+1) + uPrev(l,m-1) - 4*uPrev(l,m))))*k^2 + ...
-        k*sigma0*uPrev(l,m) + 2*u(l,m) - uPrev(l,m));
-        
+%          mu^2 *(u(l,m+2) + u(l,m-2) + u(l+2,m) + u(l-2,m)); % eq. at pg.347 
+%     uNext(l,m) = (1/(k*sigma0 + 1))*(((-(kappasq)/h^4)*((u(l+2,m) + u(l-2,m) + u(l,m+2) + u(l,m-2)) + ...
+%         2*(u(l+1,m+1) + u(l+1,m-1) + u(l-1,m+1) + u(l-1,m-1)) - ...
+%         8*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1)) + 20*u(l,m)) + ...
+%         (gamma^2/h^2)*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1) - 4*u(l,m)) + ...
+%         ((2*sigma1)/(k*h^2))*(u(l+1,m) + u(l-1,m) + u(l,m+1) + u(l,m-1) - 4*u(l,m) - ...
+%         (uPrev(l+1,m) + uPrev(l-1,m) + uPrev(l,m+1) + uPrev(l,m-1) - 4*uPrev(l,m))))*k^2 + ...
+%         k*sigma0*uPrev(l,m) + 2*u(l,m) - uPrev(l,m));
+%     
+    uNext(l,m) = u(l,m)*ulMult + (u(l-1,m) + u(l+1,m) + u(l,m+1) + u(l,m-1))*ul1Mult + ...
+        (u(l-1,m-1) + u(l+1,m-1) + u(l-1,m+1) + u(l+1,m+1))*ul1dMult + ...
+        (u(l-2,m) + u(l+2,m) + u(l,m-2) + u(l,m+2))*ul2Mult + ...
+        uPrev(l,m)*uPrevlMult + (uPrev(l+1,m) + uPrev(l-1,m) + uPrev(l,m+1) + uPrev(l,m-1))*uPrevl1Mult;    
     out(n) = uNext(floor(Nx/2),floor(Ny/2));
      
 %     drawnow
