@@ -47,6 +47,7 @@ outPosB = floor(NB/2);
 lB = 3:NB-2;
 % figure(3)
 % loopty loop 
+tic
 for n = 1:dur
 
     
@@ -85,5 +86,6 @@ for n = 1:dur
     uB = uBNext;
 
 end
+toc
 figure(2)
 plot(outB)
