@@ -48,35 +48,32 @@ lB = 3:NB-2;
 % figure(3)
 % loopty loop 
 uBlMult = (2*hB^4 - 4*hB^2*k*sigmaB1 - 6*k^2*kappaB^2)/(hB^4*(k*sigmaB0 + 1));
-uBlm1Mult = (2*hB^2*k*sigmaB1 + 4*k^2*kappaB^2)/(hB^4*(k*sigmaB0 + 1));
-uBlp1Mult = uBlm1Mult;
-uBlm2Mult = (-k^2*kappaB^2)/(hB^4*(k*sigmaB0 + 1));
-uBlp2Mult = uBlm2Mult;
+uBl1Mult = (2*hB^2*k*sigmaB1 + 4*k^2*kappaB^2)/(hB^4*(k*sigmaB0 + 1));
+uBl2Mult = (-k^2*kappaB^2)/(hB^4*(k*sigmaB0 + 1));
 uBPrevlMult = (hB^4*k*sigmaB0 - hB^4 + 4*hB^2*k*sigmaB1)/(hB^4*(k*sigmaB0 + 1));
-uBPrevlm1Mult = (-2*sigmaB1*k)*1/(hB^2*(k*sigmaB0 + 1));
-uBPrevlp1Mult = uBPrevlm1Mult;
+uBPrevl1Mult = (-2*sigmaB1*k)*1/(hB^2*(k*sigmaB0 + 1));
 tic
 for n = 1:dur
-
-    
-    uBNext(lB) = uB(lB)*uBlMult + uB(lB-1)*uBlm1Mult + uB(lB+1)*uBlp1Mult + uB(lB-2)*uBlm2Mult + uB(lB+2)*uBlp2Mult + ...
-        uBPrev(lB)*uBPrevlMult + uBPrev(lB-1)*uBPrevlm1Mult + uBPrev(lB+1)*uBPrevlp1Mult;
-    % find virtual grid points
     uB0 = 2*uB(1)-uB(2);                    % uB(0)
     uBm1 = 2*(uB0-uB(2))+uB(3);             % uB(-1)
     uBPrev0 = 2*uBPrev(1)-uBPrev(2);        % uBPrev(0)
     uBNp1 = 2*uB(NB) - uB(NB-1);            % uB(N+1)
     uBNp2 = 2*(uBNp1 - uB(NB-1)) + uB(NB-2);% uB(N+2)
     uBPrevNp1 = 2*uBPrev(NB) - uBPrev(NB-1);% uBPrev(N+1)
+    
+    uBNext(lB) = uB(lB)*uBlMult + (uB(lB-1) + uB(lB+1))*uBl1Mult + (uB(lB-2) + uB(lB+2))*uBl2Mult + ...
+        uBPrev(lB)*uBPrevlMult + (uBPrev(lB-1)+ uBPrev(lB+1))*uBPrevl1Mult;
+    % find virtual grid points
+
     % solve for uBNext at points 1, 2, N-1, N
-    uBNext(2) = uB(2)*uBlMult + uB(2-1)*uBlm1Mult + uB(2+1)*uBlp1Mult + uB0*uBlm2Mult + uB(2+2)*uBlp2Mult + ...
-        uBPrev(2)*uBPrevlMult + uBPrev(2-1)*uBPrevlm1Mult + uBPrev(2+1)*uBPrevlp1Mult;
-    uBNext(1) = uB(1)*uBlMult + uB0*uBlm1Mult + uB(1+1)*uBlp1Mult + uBm1*uBlm2Mult + uB(1+2)*uBlp2Mult + ...
-        uBPrev(1)*uBPrevlMult + uBPrev0*uBPrevlm1Mult + uBPrev(1+1)*uBPrevlp1Mult;
-    uBNext(NB-1) = uB(NB-1)*uBlMult + uB(NB-1-1)*uBlm1Mult + uB(NB-1+1)*uBlp1Mult + uB(NB-1-2)*uBlm2Mult + uBNp1*uBlp2Mult + ...
-        uBPrev(NB-1)*uBPrevlMult + uBPrev(NB-1-1)*uBPrevlm1Mult + uBPrev(NB-1+1)*uBPrevlp1Mult;
-    uBNext(NB) = uB(NB)*uBlMult + uB(NB-1)*uBlm1Mult + uBNp1*uBlp1Mult + uB(NB-2)*uBlm2Mult + uBNp2*uBlp2Mult + ...
-        uBPrev(NB)*uBPrevlMult + uBPrev(NB-1)*uBPrevlm1Mult + uBPrevNp1*uBPrevlp1Mult;
+    uBNext(2) = uB(2)*uBlMult + (uB(2-1) + uB(2+1))*uBl1Mult + (uB0 + uB(2+2))*uBl2Mult + ...
+        uBPrev(2)*uBPrevlMult + (uBPrev(2-1) + uBPrev(2+1))*uBPrevl1Mult;
+    uBNext(1) = uB(1)*uBlMult + (uB0 + uB(1+1))*uBl1Mult + (uBm1 + uB(1+2))*uBl2Mult + ...
+        uBPrev(1)*uBPrevlMult + (uBPrev0+ uBPrev(1+1))*uBPrevl1Mult;
+    uBNext(NB-1) = uB(NB-1)*uBlMult + (uB(NB-1-1) + uB(NB-1+1))*uBl1Mult + (uB(NB-1-2) + uBNp1)*uBl2Mult + ...
+        uBPrev(NB-1)*uBPrevlMult + (uBPrev(NB-1-1) + uBPrev(NB-1+1))*uBPrevl1Mult;
+    uBNext(NB) = uB(NB)*uBlMult + (uB(NB-1) + uBNp1)*uBl1Mult + (uB(NB-2) + uBNp2)*uBl2Mult + ...
+        uBPrev(NB)*uBPrevlMult + (uBPrev(NB-1) + uBPrevNp1)*uBPrevl1Mult;
         
     
     outB(n) = uBNext(outPosB);
