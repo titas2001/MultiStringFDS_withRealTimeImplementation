@@ -3,80 +3,91 @@ close all;
 clc
 
 fs = 44100;             % sampling freq
-f0 = 150;               % fundamental freq
+f0 = 100;               % fundamental freq
 B = 0.0001;             % inharmonicity parameter (>0)x`
 k = 1/fs;               % time step
 T0 = 60;                % applied string tension
 T = 40;                 % applied plate tension
 rhoS = 7700;            % material density of the string
 rhoP = 1150;            % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
-AreaS = 2.02682992e-7;   % string cross sectional area
-HP = 0.002;              % plate thickness
-cS = sqrt(T0/(rhoS*AreaS));
-cP = sqrt(T/(rhoP*HP));          
-LS = 1;                 % scaling lenght
-E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
+AreaS = 2.02682992e-7;  % string cross sectional area
+HP = 0.002;             % plate thickness         
+LS = 0.5;               % scaling lenght
+EP = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
 Lx = r*0.4;             % length of plate in x direction
 Ly = (1/r)*0.4;         % length of plate in y direction
-durration = 5;          % synthesised sound lenght in seconds
+durration = 1;          % synthesised sound lenght in seconds
 dur = fs*durration;     % synthesised sound lenght in samples
-gammaS = 2*f0;          % scaling for a string
-gammaP = sqrt(T/(rhoP*HP*Lx*Ly));  
-theta = 0.575;          % free parameter for the implicit scheme
-R = 1;                  % resistance in mass spring
 lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
-vP0 = -10;
+% vP0 = -10;            % initial velocity of a plate
 M = 0.03;
-Bb = 0.0001;             % inharmonicity parameter (>0)x`
-rhoB = 800;              % material density
-AreaB = 2.02e-4;         % bridge cross sectional area
-LB = 1;                % scaling lenght
-EB = 9.5e+9;           % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
+Bb = 0.0001;            % inharmonicity parameter (>0)x`
+rhoB = 800;             % material density
+AreaB = 2.02e-4;        % bridge cross sectional area
+LB = 1;                 % scaling lenght
+EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
 HB = 0.075;             % thickness
-rS = 0.0005;
-ES = 3e+9;
+rS = sqrt(AreaS/pi);    % string radius
+ES = 3e+9;              % Young's Modulus of nylon
+
+gammaS = sqrt(T0/(rhoS*AreaS*LS^2));        % scaling for a string
+% 2*f0; 
+gammaP = sqrt(T/(rhoP*HP*Lx*Ly)); 
+
+% cS = sqrt(T0/(rhoS*AreaS));     % not used
+% cP = sqrt(T/(rhoP*HP));         % not used
+
+
 IS = (pi*rS^4)/4;
 kappaB=sqrt((EB*HB^2)/(12*rhoB*LB^4)); % eq. 7.70 pg. 210
 
 %
 kappaS=(ES*IS)/rhoS;
-D = E*HP^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
+D = EP*HP^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
 kappaPsq = D / (rhoP * HP * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
 
 
 % zeta0,1  pg.189 Practical setting for decay times
 % sigma0,1 pg.189 eq.7.29
 % set scheme for loss parameters for String
-zetaS1 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(1,1))^2))/(2*kappaS^2);
-zetaS2 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(2,1))^2))/(2*kappaS^2);
-sigmaS0 = 0;
+% zetaS1 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(1,1))^2))/(2*kappaS^2);
+% zetaS2 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(2,1))^2))/(2*kappaS^2);
+sigmaS0 = 1.378027748373650;
 % 6*log(10)*(-zetaS2/lossS(1,2)+zetaS1/lossS(2,2))/(zetaS1-zetaS2);
-sigmaS1 = 0;
+sigmaS1 = 3.570213734102943e-04;
 % 6*log(10)*(1/lossS(1,2)-1/lossS(2,2))/(zetaS1-zetaS2);
 % set scheme for loss parameters for Plate
 zetaP1 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(1,1))^2))/(2*kappaPsq);
 zetaP2 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(2,1))^2))/(2*kappaPsq);
-sigmaP0 = 6*log(10)*(-zetaP2/lossP(1,2)+zetaP1/lossP(2,2))/(zetaP1-zetaP2);
-sigmaP1 = 6*log(10)*(1/lossP(1,2)-1/lossP(2,2))/(zetaP1-zetaP2);
+sigmaP0 = 1.378062296963499;
+% 6*log(10)*(-zetaP2/lossP(1,2)+zetaP1/lossP(2,2))/(zetaP1-zetaP2);
+sigmaP1 = 0.096055930949692;
+% 6*log(10)*(1/lossP(1,2)-1/lossP(2,2))/(zetaP1-zetaP2);
 % loss parameters for Bar
-sigmaB0 = 1.343;
-sigmaB1 = 0.00459;
+sigmaB0 =  1.343;
+sigmaB1 =  0.00459;
 
 hB = sqrt((4*sigmaB1*k+sqrt((4*sigmaB1*k)^2+16*kappaB^2*k^2))/2);
 hS = sqrt((gammaS^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS^2)*k^2))/2); % set grid spacing for String eq.7.26 pg.188
 hP = sqrt((gammaP^2 * k^2 + 4*sigmaP1*k + sqrt((gammaP^2 * k^2 + 4*sigmaP1*k)^2 + 16*kappaPsq*k^2))); % set grid spacing for Plate tromba marina paper eq. 20
 
 NS = floor(1/hS);              % string spatial subdivisions
+NB = floor(1/hB);              % bar spatial subdivisions
 Nx = floor(sqrt(r)/hP);        % number of x-subdivisions of spatial domain
 Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
-NB = floor(1/hB);              % bar spatial subdivisions
+
+if Nx > 30
+    Nx = 30;
+end
+
+
 hP = sqrt(r)/min(Nx, Ny);      % reset grid spacing for Plate
 hS = 1/NS;                     % reset grid spacing for String
 hB = 1/NB;                     % reset grid spacing for Bar
-
+Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
 %% Intialise states of the system
 
 % Strings
@@ -100,8 +111,9 @@ uP = zeros(Nx,Ny);
 uPPrev = zeros(Nx,Ny);
 % uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ... here plate is excited by velocity
 %     k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
-outPos = floor(NS/2);
-
+outPosS = floor(NS/pi);
+outPosP = [floor(2*Nx/3*pi),floor(Ny/2*pi)];
+outPosB = floor(2*NB/pi);
 % Bar
 uBNext = zeros(NB,1);
 uB = zeros(NB,1);
@@ -169,8 +181,8 @@ uPPrevlMult = ((8*sigmaP1*k^2)/(k*hP^2) + k*sigmaP0 - 1)/(k*sigmaP0 + 1);
 uPPrevl1Mult = ((-2*sigmaP1*k^2)/(k*hP^2))/(k*sigmaP0 + 1);
 
 % Forces
-FsbMult = 1/(1/(rhoB*AreaB*hB) + 1/(rhoS*AreaS*hS));
-FbpMult = 1/(-1/(rhoB*AreaB*hB) - 1/(rhoP*HP*hP^2));
+FsbMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS*hS * (sigmaS0 + 1)));
+FbpMult = 1/(-1/(rhoB*AreaB*hB * (sigmaB0 + 1)) - 1/(rhoP*HP*hP^2 * (sigmaP0 + 1)));
 
 %%
 tic
@@ -225,50 +237,57 @@ for n = 1:dur
     
 %% Calculate the forces
     % Force from the Strings to the bridge
-    Fs1b = FsbMult * (uBNext(lBc1) + uS1Next(lS1c));
+    Fs1b = FsbMult * (-uBNext(lBc1) + uS1Next(lS1c));
         
-    Fs2b = FsbMult * (uBNext(lBc2) + uS2Next(lS2c));
+    Fs2b = FsbMult * (-uBNext(lBc2) + uS2Next(lS2c));
     
-    Fs3b = FsbMult * (uBNext(lBc3) + uS3Next(lS3c));
+    Fs3b = FsbMult * (-uBNext(lBc3) + uS3Next(lS3c));
     
     % Force from bridge' left and right mounting points to the plate
-    Fbpl = FbpMult*(uBNext(lBcl) + uPNext(lPcl, mPcl));
+    Fbpl = FbpMult*(-uBNext(lBcl) + uPNext(lPcl, mPcl));
 
-    Fbpr = FbpMult*(uBNext(lBcr) + uPNext(lPcr, mPcr));
+    Fbpr = FbpMult*(-uBNext(lBcr) + uPNext(lPcr, mPcr));
         
     
 %% Update equations at localizer points
     % Update Strings equation at the localizer point with Fsm (Force loss to the bridge)
-    uS1Next(lS1c) = uS1Next(lS1c) - Fs1b/(rhoS * AreaS *hS);
-    uS2Next(lS2c) = uS2Next(lS2c) - Fs2b/(rhoS * AreaS *hS);
-    uS3Next(lS3c) = uS3Next(lS3c) - Fs3b/(rhoS * AreaS *hS);
+    uS1Next(lS1c) = uS1Next(lS1c) - Fs1b/(rhoS * AreaS *hS * (sigmaS0 + 1));
+    uS2Next(lS2c) = uS2Next(lS2c) - Fs2b/(rhoS * AreaS *hS * (sigmaS0 + 1));
+    uS3Next(lS3c) = uS3Next(lS3c) - Fs3b/(rhoS * AreaS *hS * (sigmaS0 + 1));
         
 
     % Update Bar function at the localizer point with Fs1b (Force gain from the string 1)
-    uBNext(lBc1) = uBNext(lBc1) + Fs1b/(rhoB * AreaB *hB);
+    uBNext(lBc1) = uBNext(lBc1) + Fs1b/(rhoB * AreaB *hB * (sigmaB0 + 1));
     % Update Bar function at the localizer point with Fs2b (Force gain from the string 2)
-    uBNext(lBc2) = uBNext(lBc2) + Fs2b/(rhoB * AreaB *hB);
+    uBNext(lBc2) = uBNext(lBc2) + Fs2b/(rhoB * AreaB *hB * (sigmaB0 + 1));
     % Update Bar function at the localizer point with Fs3b (Force gain from the string 3)
-    uBNext(lBc3) = uBNext(lBc3) + Fs3b/(rhoB * AreaB *hB);
+    uBNext(lBc3) = uBNext(lBc3) + Fs3b/(rhoB * AreaB *hB * (sigmaB0 + 1));
     % Update Bar function at the localizer point lBl with Fbp (Force gain from the string 1)
-    uBNext(lBcl) = uBNext(lBcl) - Fbpl/(rhoB * AreaB *hB);
+    uBNext(lBcl) = uBNext(lBcl) - Fbpl/(rhoB * AreaB *hB * (sigmaB0 + 1));
     % Update Bar function at the localizer point lBr with Fbp (Force gain from the string 1)
-    uBNext(lBcr) = uBNext(lBcr) - Fbpr/(rhoB * AreaB *hB);
+    uBNext(lBcr) = uBNext(lBcr) - Fbpr/(rhoB * AreaB *hB * (sigmaB0 + 1));
 
 
     % Update Plate function at the localizer points with Fbp (Force gain from the bridge)
-    uPNext(lPcl,mPcl) = uPNext(lPcl,mPcl) + Fbpl/(rhoP*HP*hP^2);
-    uPNext(lPcr,mPcr) = uPNext(lPcr,mPcr) + Fbpr/(rhoP*HP*hP^2);
+    uPNext(lPcl,mPcl) = uPNext(lPcl,mPcl) + Fbpl/(rhoP*HP*hP^2*(sigmaP0 + 1));
+    uPNext(lPcr,mPcr) = uPNext(lPcr,mPcr) + Fbpr/(rhoP*HP*hP^2*(sigmaP0 + 1));
 %% plot    
-    
-    subplot(2,1,1);
+    variable = uPNext;     
+    subplot(9,1,1);
     plot(uS1Next);
-    subplot(2,1,2);
+    subplot(9,1,2);
+    plot(uS2Next);
+    subplot(9,1,3);
+    plot(uS3Next);
+    subplot(6,1,3);
     plot(uBNext);
+    subplot(3,1,3);
+    mesh(variable);
+%     imagesc(variable);
     drawnow;
     
     %% Output
-    out(n) = uPNext(floor(Nx/2),floor(Ny/2)) + uBNext(floor(NB/2)) + uS1Next(outPos) + uS2Next(outPos) +uS3Next(outPos);  % plate + mass spring + string
+    out(n) = uPNext(floor(Nx/2),floor(Ny/2)) + uBNext(floor(NB/2)) + uS1Next(outPosS) + uS2Next(outPosS) +uS3Next(outPosS);  % plate + mass spring + string
     
     %% Update the state variables
     uS1Prev  = uS1;
