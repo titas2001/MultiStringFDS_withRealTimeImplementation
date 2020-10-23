@@ -4,39 +4,46 @@ clc
 
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
-T0 = 60;                % applied string tension
-T = 40;                 % applied plate tension
-rhoS = 7700;            % material density of the string
+TS1 = 8.4*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
+TS2 = 5.6*9.8;          % applied string tension
+TS3 = 5.2*9.8;          % applied string tension
+TP = 100000;            % applied plate tension
+rhoS = 1156.48151991993;% material density of the string                        
+                        % "Handbook of Fiber Chemistry", Menachem Lewin, Editor, 2nd ed.,1998, Marcel Dekker, pp. 438–441, ISBN 0-8247-9471-0
+                        % "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
 rhoP = 1150;            % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 HP = 0.002;             % plate thickness         
-EP = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
+EP = 3e+9;              % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
 Lx = r*0.4;             % length of plate in x direction
 Ly = (1/r)*0.4;         % length of plate in y direction
 LS = 0.5;               % lenght of the string
 LB = 1;                 % lenght of the bridge
-durration = 1;          % synthesised sound lenght in seconds
+durration = 10;          % synthesised sound lenght in seconds
 dur = fs*durration;     % synthesised sound lenght in samples
 lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
-% vP0 = -10;            % initial velocity of a plate
+vP0 = -20;            % initial velocity of a plate
 rhoB = 800;             % material density
-AreaS1 = 2.02682992e-7; % string cross sectional area
-AreaS2 = 1.52682992e-7; % string cross sectional area
-AreaS3 = 0.52682992e-7; % string cross sectional area
+AreaS1 = 0.00000165129; % string cross sectional area  
+AreaS2 = 8.82473376e-7; % string cross sectional area
+AreaS3 = 3.848451e-7; % string cross sectional area
 AreaB = 2.02e-4;        % bridge cross sectional area
 EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
 HB = 0.075;             % thickness
 rS1 = sqrt(AreaS1/pi);  % string1 radius
 rS2 = sqrt(AreaS2/pi);  % string2 radius
 rS3 = sqrt(AreaS3/pi);  % string2 radius
-ES = 3e+9;              % Young's Modulus of nylon
+ES = 9.9e+9;            % Young modulus "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
 
-gammaS1 = sqrt(T0/(rhoS*AreaS1*LS^2));        % String tension
-gammaS2 = sqrt(T0/(rhoS*AreaS2*LS^2));        % String tension
-gammaS3 = sqrt(T0/(rhoS*AreaS3*LS^2));        % String tension
-gammaP = sqrt(T/(rhoP*HP*Lx*Ly)); 
+% gammaS1 = sqrt(TS1/(rhoS*AreaS1));        % String tension
+% gammaS2 = sqrt(TS2/(rhoS*AreaS2));        % String tension
+% gammaS3 = sqrt(TS3/(rhoS*AreaS3));        % String tension
+gammaS1 = sqrt(TS1/(rhoS*AreaS1*LS^2));        % String tension
+gammaS2 = sqrt(TS2/(rhoS*AreaS2*LS^2));        % String tension
+gammaS3 = sqrt(TS3/(rhoS*AreaS3*LS^2));        % String tension
+gammaP = sqrt(TP/(rhoP*HP*Lx*Ly)); 
 
 % cS = sqrt(T0/(rhoS*AreaS));     % not used
 % cP = sqrt(T/(rhoP*HP));         % not used
@@ -48,11 +55,11 @@ IS3 = (pi*rS3^4)/4;     % string1 inertia
 kappaB=sqrt((EB*HB^2)/(12*rhoB*LB^4)); % eq. 7.70 pg. 210
 
 %
-kappaS1=(ES*IS1)/rhoS;
-kappaS2=(ES*IS2)/rhoS;
-kappaS3=(ES*IS3)/rhoS;
-D = EP*HP^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
-kappaPsq = D / (rhoP * HP * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
+kappaS1=sqrt((ES*IS1)/(rhoS*AreaS1*LS^4));
+kappaS2=sqrt((ES*IS2)/(rhoS*AreaS2*LS^4));
+kappaS3=sqrt((ES*IS3)/(rhoS*AreaS3*LS^4));
+D = EP*HP^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.331
+kappaPsq = D / (rhoP * HP * Lx^2 * Ly^2); % pg.332 eq.12.3 kappa^2
 
 
 % zeta0,1  pg.189 Practical setting for decay times
@@ -65,8 +72,8 @@ sigmaS0 = 1.378027748373650;
 sigmaS1 = 3.570213734102943e-04;
 % 6*log(10)*(1/lossS(1,2)-1/lossS(2,2))/(zetaS1-zetaS2);
 % set scheme for loss parameters for Plate
-zetaP1 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(1,1))^2))/(2*kappaPsq);
-zetaP2 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(2,1))^2))/(2*kappaPsq);
+% zetaP1 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(1,1))^2))/(2*kappaPsq);
+% zetaP2 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(2,1))^2))/(2*kappaPsq);
 sigmaP0 = 1.378062296963499;
 % 6*log(10)*(-zetaP2/lossP(1,2)+zetaP1/lossP(2,2))/(zetaP1-zetaP2);
 sigmaP1 = 0.096055930949692;
@@ -75,15 +82,17 @@ sigmaP1 = 0.096055930949692;
 sigmaB0 =  1.343;
 sigmaB1 =  0.00459;
 
-hB = sqrt((4*sigmaB1*k+sqrt((4*sigmaB1*k)^2+16*kappaB^2*k^2))/2);
-hS1 = sqrt((gammaS1^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS1^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS1^2)*k^2))/2); % set grid spacing for String eq.7.26 pg.188
-hS2 = sqrt((gammaS2^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS2^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS2^2)*k^2))/2); % set grid spacing for String eq.7.26 pg.188
-hS3 = sqrt((gammaS3^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS3^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS3^2)*k^2))/2); % set grid spacing for String eq.7.26 pg.188
+hB = sqrt((4*sigmaB1*k+sqrt((4*sigmaB1*k)^2+16*kappaB^2*k^2))/2); % same method as for the string in pg. 176 but without gamma term 
+hS1 = sqrt((gammaS1^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS1^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS1^2)*k^2))/2); % set grid spacing for String eq.7.24-25 pg.176
+hS2 = sqrt((gammaS2^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS2^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS2^2)*k^2))/2); % set grid spacing for String eq.7.24-25 pg.176
+hS3 = sqrt((gammaS3^2 * k^2 + 4*sigmaS1*k + sqrt((gammaS3^2 * k^2 + 4*sigmaS1*k)^2 + 16*(kappaS3^2)*k^2))/2); % set grid spacing for String eq.7.24-25 pg.176
 hP = sqrt((gammaP^2 * k^2 + 4*sigmaP1*k + sqrt((gammaP^2 * k^2 + 4*sigmaP1*k)^2 + 16*kappaPsq*k^2))); % set grid spacing for Plate tromba marina paper eq. 20
 
-NS1 = floor(1/hS1);             % string spatial subdivisions
-NS2 = floor(1/hS2);             % string spatial subdivisions
-NS3 = floor(1/hS3);             % string spatial subdivisions
+
+
+NS1 = floor(1/hS1);            % string spatial subdivisions
+NS2 = floor(1/hS2);            % string spatial subdivisions
+NS3 = floor(1/hS3);            % string spatial subdivisions
 NB = floor(1/hB);              % bar spatial subdivisions
 Nx = floor(sqrt(r)/hP);        % number of x-subdivisions of spatial domain
 Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
@@ -94,11 +103,12 @@ end
 
 
 hP = sqrt(r)/min(Nx, Ny);      % reset grid spacing for Plate
-hS1 = 1/NS1;                     % reset grid spacing for String1
-hS2 = 1/NS2;                     % reset grid spacing for String2
-hS3 = 1/NS3;                     % reset grid spacing for String3
+hS1 = 1/NS1;                   % reset grid spacing for String1
+hS2 = 1/NS2;                   % reset grid spacing for String2
+hS3 = 1/NS3;                   % reset grid spacing for String3
 hB = 1/NB;                     % reset grid spacing for Bar
 Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
+
 %% Intialise states of the system
 
 % Strings
@@ -155,15 +165,9 @@ lBc3 = 13;      % bar connection to the 3rd string
 lBcl = 1;       % bar left side connection to the plate
 lBcr = 17;      % bar right side connection to the plate
 
-lM = 1;         % will be deprecated
-lMc = 1;        % will be deprecated
-
 lS1c = NS1 - floor(NS1/8); % 1st string connection to the bar
 lS2c = NS2 - floor(NS2/8); % 2nd string connection to the bar
 lS3c = NS3 - floor(NS3/8); % 3rd string connection to the bar
-
-lPc = Nx - floor(Nx/3); % will be deprecated
-mPc = Ny - floor(Ny/3); % will be deprecated
 
 lPcl = Nx - floor(2*Nx/5); % Plate connection to the bar on the left side x coordinate
 lPcr = Nx - floor(3*Nx/5); % Plate connection to the bar on the right side x coordinate
@@ -250,13 +254,6 @@ for n = 1:dur
  
         
     %% Update equation of the Plate
-%     uPNext(lP,mP) = (1/(k*sigmaP0 + 1))*(((-(kappaPsq)/hP^4)*((uP(lP+2,mP) + uP(lP-2,mP) + uP(lP,mP+2) + uP(lP,mP-2)) + ...
-%         2*(uP(lP+1,mP+1) + uP(lP+1,mP-1) + uP(lP-1,mP+1) + uP(lP-1,mP-1)) - ...
-%         8*(uP(lP+1,mP) + uP(lP-1,mP) + uP(lP,mP+1) + uP(lP,mP-1)) + 20*uP(lP,mP)) + ...
-%         (gammaP^2/hP^2)*(uP(lP+1,mP) + uP(lP-1,mP) + uP(lP,mP+1) + uP(lP,mP-1) - 4*uP(lP,mP)) + ...
-%         ((2*sigmaP1)/(k*hP^2))*(uP(lP+1,mP) + uP(lP-1,mP) + uP(lP,mP+1) + uP(lP,mP-1) - 4*uP(lP,mP) - ...
-%         (uPPrev(lP+1,mP) + uPPrev(lP-1,mP) + uPPrev(lP,mP+1) + uPPrev(lP,mP-1) - 4*uPPrev(lP,mP))))*k^2 + ...
-%         k*sigmaP0*uPPrev(lP,mP) + 2*uP(lP,mP) - uPPrev(lP,mP));
     uPNext(lP,mP) = uP(lP,mP)*uPlMult + (uP(lP-1,mP) + uP(lP+1,mP) + uP(lP,mP+1) + uP(lP,mP-1))*uPl1Mult + ...
         (uP(lP-1,mP-1) + uP(lP+1,mP-1) + uP(lP-1,mP+1) + uP(lP+1,mP+1))*uPl1dMult + ...
         (uP(lP-2,mP) + uP(lP+2,mP) + uP(lP,mP-2) + uP(lP,mP+2))*uPl2Mult + ...
@@ -315,21 +312,38 @@ for n = 1:dur
 %     drawnow;
     
     %% Output
-    out(n) = uPNext(outPosP(1),outPosP(2)) + uBNext(outPosB) + uS1Next(outPosS1) + uS2Next(outPosS2) +uS3Next(outPosS2);  % plate + mass spring + string
+    out(n) = uPNext(outPosP(1),outPosP(2)) + ...                   % plate
+        uBNext(outPosB) + ...                                      % bridge
+        uS1Next(outPosS1) + uS2Next(outPosS2) +uS3Next(outPosS2);  % string
     
     %% Update the state variables
     uS1Prev  = uS1;
     uS1 = uS1Next;    
-    uS2Prev  = uS2;
-    uS2 = uS2Next;
-    uS3Prev  = uS3;
-    uS3 = uS3Next;  
+%     uS2Prev  = uS2;
+%     uS2 = uS2Next;
+%     uS3Prev  = uS3;
+%     uS3 = uS3Next;  
     uPPrev  = uP;
     uP = uPNext;
     uBPrev  = uB;
     uB = uBNext;
-%     uMPrev  = uM;
-%     uM = uMNext;
+     if n == floor(dur/3)
+        uexS2 = zeros(NS2,1);
+        uexS2((1:floor(NS2/10)) + floor(NS2/5)) = hann(floor(NS2/10));
+        uS2((1:floor(NS2/10)) + floor(NS2/5)) = uS2((1:floor(NS2/10)) + floor(NS2/5)) + uexS2((1:floor(NS2/10)) + floor(NS2/5));
+%         uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
+%             uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) + ... here plate is excited by velocity
+%             k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
+     end
+     if n ==floor(dur*2/3)
+        uexS3 = zeros(NS3,1);
+        uexS3((1:floor(NS3/10)) + floor(NS3/5)) = hann(floor(NS3/10));
+        uS3((1:floor(NS3/10)) + floor(NS3/5)) = uS3((1:floor(NS3/10)) + floor(NS3/5)) + uexS3((1:floor(NS3/10)) + floor(NS3/5));
+     end
+    uS2Prev  = uS2;
+    uS2 = uS2Next;
+    uS3Prev  = uS3;
+    uS3 = uS3Next;  
 
 end
 toc
