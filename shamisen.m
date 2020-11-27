@@ -4,9 +4,9 @@ clc
 
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
-TS1 = 8.4*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
-TS2 = 5.6*9.8;          % applied string tension
-TS3 = 5.2*9.8;          % applied string tension
+TS1 = 7.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
+TS2 = 7.85*9.8;          % applied string tension
+TS3 = 7*9.8;          % applied string tension
 TP = 100000;            % applied plate tension
 rhoS = 1156.48151991993;% material density of the string                        
                         % "Handbook of Fiber Chemistry", Menachem Lewin, Editor, 2nd ed.,1998, Marcel Dekker, pp. 438–441, ISBN 0-8247-9471-0
@@ -20,15 +20,15 @@ Lx = r*0.4;             % length of plate in x direction
 Ly = (1/r)*0.4;         % length of plate in y direction
 LS = 0.5;               % lenght of the string
 LB = 1;                 % lenght of the bridge
-durration = 10;          % synthesised sound lenght in seconds
+durration = 3;          % synthesised sound lenght in seconds
 dur = fs*durration;     % synthesised sound lenght in samples
 lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 vP0 = -20;            % initial velocity of a plate
 rhoB = 800;             % material density
-AreaS1 = 0.00000165129; % string cross sectional area  
-AreaS2 = 8.82473376e-7; % string cross sectional area
-AreaS3 = 3.848451e-7; % string cross sectional area
+AreaS1 = 0.00000125129; % string cross sectional area  
+AreaS2 = 6.12473376e-7; % string cross sectional area
+AreaS3 = 3.098451e-7; % string cross sectional area
 AreaB = 2.02e-4;        % bridge cross sectional area
 EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
 HB = 0.075;             % thickness
@@ -114,9 +114,9 @@ Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
 % Strings
 uS1Next = zeros(NS1,1);
 uS1 = zeros(NS1,1);
-width = floor(NS1/10);
-excitationRange = 1:width;
-uS1(excitationRange + floor(NS1/5)) = hann(width);
+% width = floor(NS1/10);
+% excitationRange = 1:width;
+% uS1(excitationRange + floor(NS1/5)) = hann(width);
 uS1Prev = uS1;
 uS2Next = zeros(NS2,1);
 uS2 = zeros(NS2,1);
@@ -126,9 +126,9 @@ uS2 = zeros(NS2,1);
 uS2Prev = uS2;
 uS3Next = zeros(NS3,1);
 uS3 = zeros(NS3,1);
-% width = floor(NS3/10);
-% excitationRange = 1:width;
-% uS3(excitationRange + floor(NS3/5)) = hann(width);
+width = floor(NS3/10);
+excitationRange = 1:width;
+uS3(excitationRange + floor(NS3/5)) = hann(width);
 uS3Prev = uS3;
 
 
@@ -153,9 +153,9 @@ out = zeros(dur,1);
 %% Intialise l for update equations
 lP = 3:Nx-2;
 mP = 3:Ny-2;
-lS1 = 3:NS1-2;
-lS2 = 3:NS2-2;
-lS3 = 3:NS3-2;
+lS1 = 3+(0):NS1-2;
+lS2 = 3+(0):NS2-2;
+lS3 = 3+(0):NS3-2;
 lB = 3:NB-2;
 
 %% Connection points
@@ -327,19 +327,19 @@ for n = 1:dur
     uP = uPNext;
     uBPrev  = uB;
     uB = uBNext;
-     if n == floor(dur/3)
-        uexS2 = zeros(NS2,1);
-        uexS2((1:floor(NS2/10)) + floor(NS2/5)) = hann(floor(NS2/10));
-        uS2((1:floor(NS2/10)) + floor(NS2/5)) = uS2((1:floor(NS2/10)) + floor(NS2/5)) + uexS2((1:floor(NS2/10)) + floor(NS2/5));
-%         uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
-%             uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) + ... here plate is excited by velocity
-%             k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
-     end
-     if n ==floor(dur*2/3)
-        uexS3 = zeros(NS3,1);
-        uexS3((1:floor(NS3/10)) + floor(NS3/5)) = hann(floor(NS3/10));
-        uS3((1:floor(NS3/10)) + floor(NS3/5)) = uS3((1:floor(NS3/10)) + floor(NS3/5)) + uexS3((1:floor(NS3/10)) + floor(NS3/5));
-     end
+%      if n == floor(dur/3)
+%         uexS2 = zeros(NS2,1);
+%         uexS2((1:floor(NS2/10)) + floor(NS2/5)) = hann(floor(NS2/10));
+%         uS2((1:floor(NS2/10)) + floor(NS2/5)) = uS2((1:floor(NS2/10)) + floor(NS2/5)) + uexS2((1:floor(NS2/10)) + floor(NS2/5));
+% %         uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
+% %             uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) + ... here plate is excited by velocity
+% %             k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
+%      end
+%      if n ==floor(dur*2/3)
+%         uexS3 = zeros(NS3,1);
+%         uexS3((1:floor(NS3/10)) + floor(NS3/5)) = hann(floor(NS3/10));
+%         uS3((1:floor(NS3/10)) + floor(NS3/5)) = uS3((1:floor(NS3/10)) + floor(NS3/5)) + uexS3((1:floor(NS3/10)) + floor(NS3/5));
+%      end
     uS2Prev  = uS2;
     uS2 = uS2Next;
     uS3Prev  = uS3;
