@@ -7,14 +7,14 @@ k = 1/fs;
 duration = 1;          % synthesised sound duration in s
 dur = fs*duration;
 f0 = 100;
-H = 0.002;              % plate thickness
+H = 0.0002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
-E = 3e+1;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
+E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
 Lx = r*0.4;
 Ly = (1/r)*0.4;
-T = 40000;
+T = 4000;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
 kappasq = D / (rho * H * Lx^2 * Ly^2); % pg.342 eq.12.3 kappa^2
@@ -32,8 +32,8 @@ zeta1 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(1,1))^2))/(2*kappasq);
 zeta2 = (-gamma^2+sqrt(gamma^4+4*kappasq*(2*pi*loss(2,1))^2))/(2*kappasq);
 sigma0 = 6*log(10)*(-zeta2/loss(1,2)+zeta1/loss(2,2))/(zeta1-zeta2);
 sigma1 = 6*log(10)*(1/loss(1,2)-1/loss(2,2))/(zeta1-zeta2);
-sigma1 = sigma1*100;
-h = sqrt((c^2 * k^2 + 4*sigma1*k + sqrt((c^2 * k^2 + 4*sigma1*k)^2 + 16*kappasq*k^2)));
+% sigma1 = sigma1;
+h = sqrt((gamma^2 * k^2 + 4*sigma1*k + sqrt((gamma^2 * k^2 + 4*sigma1*k)^2 + 16*kappasq*k^2)));
 
 
 

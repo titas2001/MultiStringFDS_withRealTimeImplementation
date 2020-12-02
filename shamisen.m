@@ -1,18 +1,19 @@
 clear all;
 close all;
 clc
-
+scale = 10;
+shamisenString = 3;
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
 TS1 = 7.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
 TS2 = 7.85*9.8;          % applied string tension
 TS3 = 7*9.8;          % applied string tension
-TP = 100000;            % applied plate tension
+TP = 4000;            % applied plate tension
 rhoS = 1156.48151991993;% material density of the string                        
                         % "Handbook of Fiber Chemistry", Menachem Lewin, Editor, 2nd ed.,1998, Marcel Dekker, pp. 438–441, ISBN 0-8247-9471-0
                         % "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
 rhoP = 1150;            % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
-HP = 0.002;             % plate thickness         
+HP = 0.0002;             % plate thickness         
 EP = 3e+9;              % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
@@ -30,7 +31,8 @@ AreaS1 = 0.00000125129; % string cross sectional area
 AreaS2 = 6.12473376e-7; % string cross sectional area
 AreaS3 = 3.098451e-7; % string cross sectional area
 AreaB = 2.02e-4;        % bridge cross sectional area
-EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
+% EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
+EB = 3.2e+9;            % Young's modulus acrylic https://www.engineeringtoolbox.com/young-modulus-d_417.html
 HB = 0.075;             % thickness
 rS1 = sqrt(AreaS1/pi);  % string1 radius
 rS2 = sqrt(AreaS2/pi);  % string2 radius
@@ -69,7 +71,7 @@ kappaPsq = D / (rhoP * HP * Lx^2 * Ly^2); % pg.332 eq.12.3 kappa^2
 % zetaS2 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(2,1))^2))/(2*kappaS^2);
 sigmaS0 = 1.378027748373650;
 % 6*log(10)*(-zetaS2/lossS(1,2)+zetaS1/lossS(2,2))/(zetaS1-zetaS2);
-sigmaS1 = 3.570213734102943e-04;
+sigmaS1 = 3.570213734102943e-03;
 % 6*log(10)*(1/lossS(1,2)-1/lossS(2,2))/(zetaS1-zetaS2);
 % set scheme for loss parameters for Plate
 % zetaP1 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(1,1))^2))/(2*kappaPsq);
@@ -97,8 +99,8 @@ NB = floor(1/hB);              % bar spatial subdivisions
 Nx = floor(sqrt(r)/hP);        % number of x-subdivisions of spatial domain
 Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
 
-if Nx > 30
-    Nx = 30;
+if Nx > scale
+    Nx = scale;
 end
 
 
@@ -112,23 +114,30 @@ Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
 %% Intialise states of the system
 
 % Strings
+
 uS1Next = zeros(NS1,1);
 uS1 = zeros(NS1,1);
-% width = floor(NS1/10);
-% excitationRange = 1:width;
-% uS1(excitationRange + floor(NS1/5)) = hann(width);
+if shamisenString == 1
+    width = round(NS1/10);
+    excitationRange = 1:width;
+    uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
+end
 uS1Prev = uS1;
 uS2Next = zeros(NS2,1);
 uS2 = zeros(NS2,1);
-% width = floor(NS2/10);
-% excitationRange = 1:width;
-% uS2(excitationRange + floor(NS2/5)) = hann(width);
+if shamisenString == 2
+    width = round(NS2/10);
+    excitationRange = 1:width;
+    uS2(excitationRange + floor((NS2*5)/(pi*6))) = hann(width);
+end
 uS2Prev = uS2;
 uS3Next = zeros(NS3,1);
 uS3 = zeros(NS3,1);
-width = floor(NS3/10);
-excitationRange = 1:width;
-uS3(excitationRange + floor(NS3/5)) = hann(width);
+if shamisenString == 3
+    width = round(NS3/10);
+    excitationRange = 1:width;
+    uS3(excitationRange + floor((NS3*5)/(pi*6))) = hann(width);
+end
 uS3Prev = uS3;
 
 
@@ -138,11 +147,14 @@ uP = zeros(Nx,Ny);
 uPPrev = zeros(Nx,Ny);
 % uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ... here plate is excited by velocity
 %     k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
-outPosS1 = floor(NS1/pi);
-outPosS2 = floor(NS2/pi);
-outPosS3 = floor(NS3/pi);
+% outPosS1 = floor((NS1*5)/(pi*4));
+% outPosS2 = floor((NS2*5)/(pi*4));
+% outPosS3 = floor((NS3*5)/(pi*4));
 outPosP = [floor(2*Nx/(pi)) floor(Ny/(pi))];
 outPosB = floor(2*NB/pi);
+outPosS1 =floor((2*NS1)/(pi*7))+4;
+outPosS2 =floor((2*NS2)/(pi*7))+4;
+outPosS3 =floor((2*NS3)/(pi*7))+4;
 % Bar
 uBNext = zeros(NB,1);
 uB = zeros(NB,1);
@@ -159,15 +171,15 @@ lS3 = 3+(0):NS3-2;
 lB = 3:NB-2;
 
 %% Connection points
-lBc1 = 5;       % bar connection to the 1st string
-lBc2 = 9;       % bar connection to the 2nd string
-lBc3 = 13;      % bar connection to the 3rd string
+lBc1 = floor((NB/2 - 1)/2);       % bar connection to the 1st string
+lBc2 = floor(NB/2);       % bar connection to the 2nd string
+lBc3 = ceil((NB/2 - 1)/2)+lBc2;      % bar connection to the 3rd string
 lBcl = 1;       % bar left side connection to the plate
-lBcr = 17;      % bar right side connection to the plate
+lBcr = NB;      % bar right side connection to the plate
 
-lS1c = NS1 - floor(NS1/8); % 1st string connection to the bar
-lS2c = NS2 - floor(NS2/8); % 2nd string connection to the bar
-lS3c = NS3 - floor(NS3/8); % 3rd string connection to the bar
+lS1c = floor((2*NS1)/(pi*7)); % 1st string connection to the bar
+lS2c = floor((2*NS2)/(pi*7)); % 2nd string connection to the bar
+lS3c = floor((2*NS3)/(pi*7)); % 3rd string connection to the bar
 
 lPcl = Nx - floor(2*Nx/5); % Plate connection to the bar on the left side x coordinate
 lPcr = Nx - floor(3*Nx/5); % Plate connection to the bar on the right side x coordinate
@@ -296,7 +308,7 @@ for n = 1:dur
     % Update Plate function at the localizer points with Fbp (Force gain from the bridge)
     uPNext(lPcl,mPcl) = uPNext(lPcl,mPcl) + Fbpl/(rhoP*HP*hP^2*(sigmaP0 + 1));
     uPNext(lPcr,mPcr) = uPNext(lPcr,mPcr) + Fbpr/(rhoP*HP*hP^2*(sigmaP0 + 1));
-%% plot    
+ %% plot    
 %     variable = uPNext;     
 %     subplot(9,1,1);
 %     plot(uS1Next);
