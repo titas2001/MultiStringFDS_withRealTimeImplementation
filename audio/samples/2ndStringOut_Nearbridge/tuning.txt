@@ -1,0 +1,33 @@
+
+string 2
+
+0	4G  	0Hz
+1	4Ab 	-1Hz
+2	4A 	0Hz
+3	4Bb 	+1Hz
+4	4B 	+2Hz
+5	5C 	0Hz
+6	5Db 	-5Hz
+7	5D 	+1Hz
+8	5Eb 	+2Hz
+9	5E 	+1Hz
+10	5F 	+4Hz
+11	5Gb 	+10Hz
+12	5G  	0Hz
+13	5Ab 	+11Hz
+14	5A 	-4Hz
+15	5Bb 	-14Hz
+16	5B 	+6Hz
+17	6C 	-3Hz
+18	6Db 	-11Hz
+19	6D 	-19Hz
+20	6Eb 	-28Hz
+21	6E 	-29Hz
+22	6F 	-27Hz
+23	6Gb 	-19Hz
+24	6G 	-2Hz
+25	6Ab 	+21Hz
+
+
+fretting possitions
+[0,3,6,9,12,14,16,19,21,23,25,26,28,30,31,32,34,35,36,37,38,39,40,41,42,43]

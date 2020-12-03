@@ -1,0 +1,17 @@
+outPos = floor((2*NS1)/(pi*7))+4
+
+Nx = 92
+18.726272 seconds
+Nx = 46 
+9.992068 seconds
+Nx = 30
+8.142518
+Nx = 20
+7.041298 seconds
+Nx = 15
+6.607014 seconds
+Nx = 10
+6.419119 seconds
+Nx = 7
+6.231390 seconds
+

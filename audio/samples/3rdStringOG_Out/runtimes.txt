@@ -1,0 +1,16 @@
+outPos = floor((NS3*5)/(pi*4))
+
+Nx = 92
+19.470309 seconds
+Nx = 46 
+9.938822 seconds
+Nx = 30
+8.016835 seconds
+Nx = 20
+7.003857 seconds
+Nx = 15
+6.633408 seconds
+Nx = 10
+6.361141 seconds
+Nx = 7
+7.126745 seconds
