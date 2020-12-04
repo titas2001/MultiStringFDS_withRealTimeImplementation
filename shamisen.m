@@ -1,13 +1,13 @@
 clear all;
 close all;
 clc
-scale = 10;
+scale = 100;
 shamisenString = 3;
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
-TS1 = 7.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
-TS2 = 7.85*9.8;          % applied string tension
-TS3 = 7*9.8;          % applied string tension
+TS1 = 14.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
+TS2 = 14.85*9.8;          % applied string tension
+TS3 = 14.36*9.8;          % applied string tension
 TP = 4000;            % applied plate tension
 rhoS = 1156.48151991993;% material density of the string                        
                         % "Handbook of Fiber Chemistry", Menachem Lewin, Editor, 2nd ed.,1998, Marcel Dekker, pp. 438–441, ISBN 0-8247-9471-0
@@ -19,7 +19,7 @@ nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
 Lx = r*0.4;             % length of plate in x direction
 Ly = (1/r)*0.4;         % length of plate in y direction
-LS = 0.5;               % lenght of the string
+LS = 1;               % lenght of the string
 LB = 1;                 % lenght of the bridge
 durration = 3;          % synthesised sound lenght in seconds
 dur = fs*durration;     % synthesised sound lenght in samples
@@ -27,9 +27,9 @@ lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 vP0 = -20;            % initial velocity of a plate
 rhoB = 800;             % material density
-AreaS1 = 0.00000125129; % string cross sectional area  
-AreaS2 = 6.12473376e-7; % string cross sectional area
-AreaS3 = 3.098451e-7; % string cross sectional area
+AreaS1 = 0.00000054129; % string cross sectional area  
+AreaS2 = 2.52473376e-7; % string cross sectional area
+AreaS3 = 1.398451e-7; % string cross sectional area
 AreaB = 2.02e-4;        % bridge cross sectional area
 % EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
 EB = 3.2e+9;            % Young's modulus acrylic https://www.engineeringtoolbox.com/young-modulus-d_417.html
@@ -37,7 +37,7 @@ HB = 0.075;             % thickness
 rS1 = sqrt(AreaS1/pi);  % string1 radius
 rS2 = sqrt(AreaS2/pi);  % string2 radius
 rS3 = sqrt(AreaS3/pi);  % string2 radius
-ES = 9.9e+9;            % Young modulus "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
+ES =  9.9e+9;            % Young modulus "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
 
 % gammaS1 = sqrt(TS1/(rhoS*AreaS1));        % String tension
 % gammaS2 = sqrt(TS2/(rhoS*AreaS2));        % String tension
@@ -111,64 +111,7 @@ hS3 = 1/NS3;                   % reset grid spacing for String3
 hB = 1/NB;                     % reset grid spacing for Bar
 Ny = floor(1/(sqrt(r)*hP));    % number of y-subdivisions of spatial domain
 
-%% Intialise states of the system
 
-% Strings
-
-uS1Next = zeros(NS1,1);
-uS1 = zeros(NS1,1);
-if shamisenString == 1
-    width = round(NS1/10);
-    excitationRange = 1:width;
-    uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
-end
-uS1Prev = uS1;
-uS2Next = zeros(NS2,1);
-uS2 = zeros(NS2,1);
-if shamisenString == 2
-    width = round(NS2/10);
-    excitationRange = 1:width;
-    uS2(excitationRange + floor((NS2*5)/(pi*6))) = hann(width);
-end
-uS2Prev = uS2;
-uS3Next = zeros(NS3,1);
-uS3 = zeros(NS3,1);
-if shamisenString == 3
-    width = round(NS3/10);
-    excitationRange = 1:width;
-    uS3(excitationRange + floor((NS3*5)/(pi*6))) = hann(width);
-end
-uS3Prev = uS3;
-
-
-% Plate
-uPNext = zeros(Nx,Ny);
-uP = zeros(Nx,Ny);
-uPPrev = zeros(Nx,Ny);
-% uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ... here plate is excited by velocity
-%     k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
-% outPosS1 = floor((NS1*5)/(pi*4));
-% outPosS2 = floor((NS2*5)/(pi*4));
-% outPosS3 = floor((NS3*5)/(pi*4));
-outPosP = [floor(2*Nx/(pi)) floor(Ny/(pi))];
-outPosB = floor(2*NB/pi);
-outPosS1 =floor((2*NS1)/(pi*7))+4;
-outPosS2 =floor((2*NS2)/(pi*7))+4;
-outPosS3 =floor((2*NS3)/(pi*7))+4;
-% Bar
-uBNext = zeros(NB,1);
-uB = zeros(NB,1);
-uBPrev = zeros(NB,1);
-
-% Output
-out = zeros(dur,1);
-%% Intialise l for update equations
-lP = 3:Nx-2;
-mP = 3:Ny-2;
-lS1 = 3+(0):NS1-2;
-lS2 = 3+(0):NS2-2;
-lS3 = 3+(0):NS3-2;
-lB = 3:NB-2;
 
 %% Connection points
 lBc1 = floor((NB/2 - 1)/2);       % bar connection to the 1st string
@@ -227,6 +170,75 @@ Fs1bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS1*hS1 * (sigmaS0 
 Fs2bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS2*hS2 * (sigmaS0 + 1)));
 Fs3bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS3*hS3 * (sigmaS0 + 1)));
 FbpMult = 1/(-1/(rhoB*AreaB*hB * (sigmaB0 + 1)) - 1/(rhoP*HP*hP^2 * (sigmaP0 + 1)));
+% frettingpos = [0,4, 8,13,17,21,24,27,30,33,36,39,41,43,45,47,49,53,55,56,58,59,60,61,63,64,65];   %1st string
+% frettingpos = [0,3,6,9,12,14,16,19,21,23,25,26,28,30,31,32,34,35,36,37,38,39,40,41,42,43];        %2nd string
+frettingpos = [0,2,5,7,9,11,12,14,16,17,18,20,21,22,23,24,25,26,27,28,29];                        %3rd string
+% noteName = ["C4","Db4","D4","Eb4","E4","F4","Gb4","G4","Ab4","A4","Bb4","B4","C5","Db5","D5"...
+%     ,"Eb5","E5","F5","Db6","D6","Eb6","E6","F5","Gb5","G5","Ab5","A5","Bb5","B5","C6","Db6","D6","Eb6"]; %1st string
+% noteName = ["G4","Ab4","A4","Bb4","B4","C5","Db5","D5","Eb5","E5","F5","Gb5","G5","Ab5","A5"...          %2nd string
+%     ,"Bb5","B5","C6","Db6","D6","Eb6","E6","F6","Gb6","G6","Ab6"];
+noteName = ["C5","Db5","D5","Eb5","E5","F5","Gb5","G5","Ab5","A5","Bb5","B5","C6","Db6","D6"...          %3rd string
+,"Eb6","E6","F6","Gb6","G6","Ab6"];
+
+for i=1:length(frettingpos)
+%% Intialise states of the system
+
+% Strings
+
+uS1Next = zeros(NS1,1);
+uS1 = zeros(NS1,1);
+if shamisenString == 1
+    width = round(NS1/10);
+    excitationRange = 1:width;
+    uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
+end
+uS1Prev = uS1;
+uS2Next = zeros(NS2,1);
+uS2 = zeros(NS2,1);
+if shamisenString == 2
+    width = round(NS2/10);
+    excitationRange = 1:width;
+    uS2(excitationRange + floor((NS2*5)/(pi*6))) = hann(width);
+end
+uS2Prev = uS2;
+uS3Next = zeros(NS3,1);
+uS3 = zeros(NS3,1);
+if shamisenString == 3
+    width = round(NS3/10);
+    excitationRange = 1:width;
+    uS3(excitationRange + floor((NS3*5)/(pi*6))) = hann(width);
+end
+uS3Prev = uS3;
+
+
+% Plate
+uPNext = zeros(Nx,Ny);
+uP = zeros(Nx,Ny);
+uPPrev = zeros(Nx,Ny);
+% uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ... here plate is excited by velocity
+%     k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
+% outPosS1 = floor((NS1*5)/(pi*4));
+% outPosS2 = floor((NS2*5)/(pi*4));
+% outPosS3 = floor((NS3*5)/(pi*4));
+outPosP = [floor(2*Nx/(pi)) floor(Ny/(pi))];
+outPosB = floor(2*NB/pi);
+outPosS1 =floor((2*NS1)/(pi*7))+4;
+outPosS2 =floor((2*NS2)/(pi*7))+4;
+outPosS3 =floor((2*NS3)/(pi*7))+4;
+% Bar
+uBNext = zeros(NB,1);
+uB = zeros(NB,1);
+uBPrev = zeros(NB,1);
+
+% Output
+out = zeros(dur,1);
+%% Intialise l for update equations
+lP = 3:Nx-2;
+mP = 3:Ny-2;
+lS1 = 3+(0):NS1-2-(0);
+lS2 = 3+(0):NS2-2-(frettingpos(i));
+lS3 = 3+(0):NS3-2-(0);
+lB = 3:NB-2;
 
 %%
 tic
@@ -359,4 +371,6 @@ for n = 1:dur
 
 end
 toc
+write(shamisenString,out,Nx,Ny,noteName(i));
+end
 plot(out);
