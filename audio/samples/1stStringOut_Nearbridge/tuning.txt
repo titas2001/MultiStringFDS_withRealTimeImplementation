@@ -49,6 +49,7 @@ fretting possitions
 45
 47
 49
+51
 53
 55
 56
@@ -59,6 +60,7 @@ fretting possitions
 63
 64
 65
+66
 ]
 
 
