@@ -1,14 +1,14 @@
 clear all;
 close all;
 clc
-scale = 100;
-shamisenString = 3;
+scale = 7;
+shamisenString = 1;
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
 TS1 = 14.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
 TS2 = 14.85*9.8;          % applied string tension
 TS3 = 14.36*9.8;          % applied string tension
-TP = 4000;            % applied plate tension
+TP = 400;            % applied plate tension
 rhoS = 1156.48151991993;% material density of the string                        
                         % "Handbook of Fiber Chemistry", Menachem Lewin, Editor, 2nd ed.,1998, Marcel Dekker, pp. 438–441, ISBN 0-8247-9471-0
                         % "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
@@ -170,27 +170,44 @@ Fs1bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS1*hS1 * (sigmaS0 
 Fs2bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS2*hS2 * (sigmaS0 + 1)));
 Fs3bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS3*hS3 * (sigmaS0 + 1)));
 FbpMult = 1/(-1/(rhoB*AreaB*hB * (sigmaB0 + 1)) - 1/(rhoP*HP*hP^2 * (sigmaP0 + 1)));
-% frettingpos = [0,4, 8,13,17,21,24,27,30,33,36,39,41,43,45,47,49,53,55,56,58,59,60,61,63,64,65];   %1st string
-% frettingpos = [0,3,6,9,12,14,16,19,21,23,25,26,28,30,31,32,34,35,36,37,38,39,40,41,42,43];        %2nd string
-frettingpos = [0,2,5,7,9,11,12,14,16,17,18,20,21,22,23,24,25,26,27,28,29];                        %3rd string
-% noteName = ["C4","Db4","D4","Eb4","E4","F4","Gb4","G4","Ab4","A4","Bb4","B4","C5","Db5","D5"...
-%     ,"Eb5","E5","F5","Db6","D6","Eb6","E6","F5","Gb5","G5","Ab5","A5","Bb5","B5","C6","Db6","D6","Eb6"]; %1st string
-% noteName = ["G4","Ab4","A4","Bb4","B4","C5","Db5","D5","Eb5","E5","F5","Gb5","G5","Ab5","A5"...          %2nd string
-%     ,"Bb5","B5","C6","Db6","D6","Eb6","E6","F6","Gb6","G6","Ab6"];
-noteName = ["C5","Db5","D5","Eb5","E5","F5","Gb5","G5","Ab5","A5","Bb5","B5","C6","Db6","D6"...          %3rd string
-,"Eb6","E6","F6","Gb6","G6","Ab6"];
+if shamisenString == 1
+    frettingpos = [0,4,8,13,17,21,24,27,30,33,36,39,41,43,45,47,49,51,53,55,56,58,59,60,61,63,64,65];   %1st string
+    noteName = ["C4","Db4","D4","Eb4","E4","F4","Gb4","G4","Ab4","A4","Bb4","B4","C5","Db5","D5"...
+    ,"Eb5","E5","F5","Gb5","G5","Ab5","A5","Bb5","B5","C6","Db6","D6","Eb6"]; %1st string
+end
+if shamisenString == 2
+    frettingpos = [0,3,6,9,12,14,16,19,21,23,25,26,28,30,31,32,34,35,36,37,38,39,40,41,42,43];        %2nd string
+    noteName = ["G4","Ab4","A4","Bb4","B4","C5","Db5","D5","Eb5","E5","F5","Gb5","G5","Ab5","A5"...          %2nd string
+    ,"Bb5","B5","C6","Db6","D6","Eb6","E6","F6","Gb6","G6","Ab6"];
+end
+if shamisenString == 3
+    frettingpos = [0,2,5,7,9,11,12,14,16,17,18,20,21,22,23,24,25,26,27,28,29];                        %3rd string
+    noteName = ["C5","Db5","D5","Eb5","E5","F5","Gb5","G5","Ab5","A5","Bb5","B5","C6","Db6","D6"...          %3rd string
+    ,"Eb6","E6","F6","Gb6","G6","Ab6"];
+end
+if shamisenString == 0
+    frettingpos = [53];
+    noteName = ["Eb6"];
+    shamisenString =1;
+end
 
+% 
+% 
 for i=1:length(frettingpos)
 %% Intialise states of the system
 
 % Strings
-
+noteName(i)
+frettingpos(i)
 uS1Next = zeros(NS1,1);
 uS1 = zeros(NS1,1);
 if shamisenString == 1
     width = round(NS1/10);
     excitationRange = 1:width;
     uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
+    lS1 = 3+(0):NS1-2-(frettingpos(i));
+    lS2 = 3+(0):NS2-2-(0);
+    lS3 = 3+(0):NS3-2-(0);
 end
 uS1Prev = uS1;
 uS2Next = zeros(NS2,1);
@@ -199,6 +216,9 @@ if shamisenString == 2
     width = round(NS2/10);
     excitationRange = 1:width;
     uS2(excitationRange + floor((NS2*5)/(pi*6))) = hann(width);
+    lS1 = 3+(0):NS1-2-(0);
+    lS2 = 3+(0):NS2-2-(frettingpos(i));
+    lS3 = 3+(0):NS3-2-(0);
 end
 uS2Prev = uS2;
 uS3Next = zeros(NS3,1);
@@ -207,6 +227,9 @@ if shamisenString == 3
     width = round(NS3/10);
     excitationRange = 1:width;
     uS3(excitationRange + floor((NS3*5)/(pi*6))) = hann(width);
+    lS1 = 3+(0):NS1-2-(0);
+    lS2 = 3+(0):NS2-2-(0);
+    lS3 = 3+(0):NS3-2-(frettingpos(i));
 end
 uS3Prev = uS3;
 
@@ -235,9 +258,7 @@ out = zeros(dur,1);
 %% Intialise l for update equations
 lP = 3:Nx-2;
 mP = 3:Ny-2;
-lS1 = 3+(0):NS1-2-(0);
-lS2 = 3+(0):NS2-2-(frettingpos(i));
-lS3 = 3+(0):NS3-2-(0);
+
 lB = 3:NB-2;
 
 %%
@@ -334,11 +355,11 @@ for n = 1:dur
 %     mesh(variable);
 % %     imagesc(variable);
 %     drawnow;
-    
+%     
     %% Output
-    out(n) = uPNext(outPosP(1),outPosP(2)) + ...                   % plate
-        uBNext(outPosB) + ...                                      % bridge
-        uS1Next(outPosS1) + uS2Next(outPosS2) +uS3Next(outPosS2);  % string
+    outP(n) = uPNext(outPosP(1),outPosP(2));                  % plate
+    outB(n) = uBNext(outPosB);                                      % bridge
+    outS(n) = uS1Next(outPosS1) + uS2Next(outPosS2) +uS3Next(outPosS2);  % string
     
     %% Update the state variables
     uS1Prev  = uS1;
@@ -371,6 +392,8 @@ for n = 1:dur
 
 end
 toc
+out = 750*outP+outB+outS;
 write(shamisenString,out,Nx,Ny,noteName(i));
 end
+
 plot(out);
