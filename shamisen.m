@@ -1,8 +1,9 @@
 clear all;
 close all;
 clc
+
 scale = 7;
-shamisenString = 1;
+shamisenString = 0;
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
 TS1 = 14.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
@@ -26,14 +27,14 @@ dur = fs*durration;     % synthesised sound lenght in samples
 lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 vP0 = -20;            % initial velocity of a plate
-rhoB = 800;             % material density
+rhoB = 1190;             % material density
 AreaS1 = 0.00000054129; % string cross sectional area  
 AreaS2 = 2.52473376e-7; % string cross sectional area
 AreaS3 = 1.398451e-7; % string cross sectional area
 AreaB = 2.02e-4;        % bridge cross sectional area
 % EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
 EB = 3.2e+9;            % Young's modulus acrylic https://www.engineeringtoolbox.com/young-modulus-d_417.html
-HB = 0.075;             % thickness
+HB = 0.0075;             % thickness
 rS1 = sqrt(AreaS1/pi);  % string1 radius
 rS2 = sqrt(AreaS2/pi);  % string2 radius
 rS3 = sqrt(AreaS3/pi);  % string2 radius
@@ -76,9 +77,9 @@ sigmaS1 = 3.570213734102943e-03;
 % set scheme for loss parameters for Plate
 % zetaP1 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(1,1))^2))/(2*kappaPsq);
 % zetaP2 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(2,1))^2))/(2*kappaPsq);
-sigmaP0 = 1.378062296963499;
+sigmaP0 = 1.378062296963499*2;
 % 6*log(10)*(-zetaP2/lossP(1,2)+zetaP1/lossP(2,2))/(zetaP1-zetaP2);
-sigmaP1 = 0.096055930949692;
+sigmaP1 = 0.096055930949692*2;
 % 6*log(10)*(1/lossP(1,2)-1/lossP(2,2))/(zetaP1-zetaP2);
 % loss parameters for Bar
 sigmaB0 =  1.343;
@@ -124,8 +125,8 @@ lS1c = floor((2*NS1)/(pi*7)); % 1st string connection to the bar
 lS2c = floor((2*NS2)/(pi*7)); % 2nd string connection to the bar
 lS3c = floor((2*NS3)/(pi*7)); % 3rd string connection to the bar
 
-lPcl = Nx - floor(2*Nx/5); % Plate connection to the bar on the left side x coordinate
-lPcr = Nx - floor(3*Nx/5); % Plate connection to the bar on the right side x coordinate
+lPcl = Nx - floor(3*Nx/5); % Plate connection to the bar on the left side x coordinate
+lPcr = Nx - floor(2*Nx/5); % Plate connection to the bar on the right side x coordinate
 mPcl = Ny - floor(Ny/4);   % Plate connection to the bar on the left side y coordinate
 mPcr = Ny - floor(Ny/4);   % Plate connection to the bar on the right side y coordinate
 
@@ -186,8 +187,8 @@ if shamisenString == 3
     ,"Eb6","E6","F6","Gb6","G6","Ab6"];
 end
 if shamisenString == 0
-    frettingpos = [53];
-    noteName = ["Eb6"];
+    frettingpos = [0];
+    noteName = ["C4"];
     shamisenString =1;
 end
 
@@ -204,7 +205,8 @@ uS1 = zeros(NS1,1);
 if shamisenString == 1
     width = round(NS1/10);
     excitationRange = 1:width;
-    uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
+%     uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
+    uS1(excitationRange + floor(NS1/2)) = hann(width);
     lS1 = 3+(0):NS1-2-(frettingpos(i));
     lS2 = 3+(0):NS2-2-(0);
     lS3 = 3+(0):NS3-2-(0);
@@ -240,9 +242,6 @@ uP = zeros(Nx,Ny);
 uPPrev = zeros(Nx,Ny);
 % uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ... here plate is excited by velocity
 %     k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
-% outPosS1 = floor((NS1*5)/(pi*4));
-% outPosS2 = floor((NS2*5)/(pi*4));
-% outPosS3 = floor((NS3*5)/(pi*4));
 outPosP = [floor(2*Nx/(pi)) floor(Ny/(pi))];
 outPosB = floor(2*NB/pi);
 outPosS1 =floor((2*NS1)/(pi*7))+4;
@@ -357,7 +356,8 @@ for n = 1:dur
 %     drawnow;
 %     
     %% Output
-    outP(n) = uPNext(outPosP(1),outPosP(2));                  % plate
+%     outP(n) = uPNext(outPosP(1),outPosP(2));                  % plate
+    outP(n) = sum(uPNext, 'all');
     outB(n) = uBNext(outPosB);                                      % bridge
     outS(n) = uS1Next(outPosS1) + uS2Next(outPosS2) +uS3Next(outPosS2);  % string
     
@@ -392,8 +392,8 @@ for n = 1:dur
 
 end
 toc
-out = 750*outP+outB+outS;
-write(shamisenString,out,Nx,Ny,noteName(i));
+out = (2737*outP)+outB+outS;
+write(shamisenString,out,Nx,Ny,noteName(i),i);
 end
 
 plot(out);
