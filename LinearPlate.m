@@ -11,9 +11,9 @@ H = 0.0002;              % plate thickness
 rho = 1150;             % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 E = 3e+9;               % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
-r = 1.3;                % grid aspect ratio
-Lx = r*0.4;
-Ly = (1/r)*0.4;
+r = 1;                % grid aspect ratio
+Lx = r*1;
+Ly = (1/r)*1;
 T = 4000;
 loss = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 D = E*H^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.341
@@ -39,8 +39,8 @@ h = sqrt((gamma^2 * k^2 + 4*sigma1*k + sqrt((gamma^2 * k^2 + 4*sigma1*k)^2 + 16*
 
 Nx = floor(sqrt(r)/h);        % number of x-subdivisions of spatial domain
 Ny = floor(1/(sqrt(r)*h));    % number of y-subdivisions of spatial domain
-if Nx > 50
-    Nx = 50;
+if Nx > 7
+    Nx = 7;
 end
 
 h = sqrt(r)/min(Nx, Ny);
@@ -54,9 +54,11 @@ u = zeros(Nx,Ny);
 uPrev = zeros(Nx,Ny);
 
 % excite at a current time-step with a hamming_3d velocity at the center
-u(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
-    k*v0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
-figure(1)
+%u(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ...
+ %   k*v0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
+u(4,4) = 1;
+uPrev(4,4) = 1;
+ figure(1)
 mesh(u)
 zlim([0,1]);
 out = zeros(length(1:dur),1);
@@ -70,7 +72,7 @@ scale = min(Nx,Ny);
 ulMult = ((-20*kappasq/h^4 - 4*gamma^2/h^2 - 8*sigma1/(k*h^2))*k^2 + 2)/(k*sigma0 + 1); 
 ul1Mult = (8*kappasq/h^4 + gamma^2/h^2 + 2*sigma1/(k*h^2))*k^2/(k*sigma0 + 1);
 ul1dMult = (-2*kappasq*k^2)*1/h^4/(k*sigma0 + 1);
-ul2Mult = -kappasq*k^2/(h^4*(k*sigma0 + 1));
+ul2Mult = -kappasq*k^2/(h^4)*(k*sigma0 + 1);
 uPrevlMult = ((8*sigma1*k^2)*1/(k*h^2) + k*sigma0 - 1)/(k*sigma0 + 1);
 uPrevl1Mult = (-2*sigma1*k^2)*1/(k*h^2)/(k*sigma0 + 1);
 tic
@@ -90,8 +92,8 @@ for n = 1:dur
         (u(l-1,m-1) + u(l+1,m-1) + u(l-1,m+1) + u(l+1,m+1))*ul1dMult + ...
         (u(l-2,m) + u(l+2,m) + u(l,m-2) + u(l,m+2))*ul2Mult + ...
         uPrev(l,m)*uPrevlMult + (uPrev(l+1,m) + uPrev(l-1,m) + uPrev(l,m+1) + uPrev(l,m-1))*uPrevl1Mult;    
-    out(n) = uNext(floor(Nx/2),floor(Ny/2));
-     
+    %out(n) = uNext(floor(Nx/2),floor(Ny/2));
+    out(n) = uNext(3,3);
 %     drawnow
 %     variable = uNext;
 %     mesh(variable)

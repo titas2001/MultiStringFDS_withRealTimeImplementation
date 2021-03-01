@@ -2,7 +2,7 @@ clear all;
 close all;
 clc
 
-scale = 7;
+scale = 30;
 shamisenString = 0;
 fs = 44100;             % sampling freq
 k = 1/fs;               % time step
@@ -18,8 +18,9 @@ HP = 0.0002;             % plate thickness
 EP = 3e+9;              % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
 r = 1.3;                % grid aspect ratio
-Lx = r*0.4;             % length of plate in x direction
-Ly = (1/r)*0.4;         % length of plate in y direction
+LP = 0.4;
+Lx = r*LP;             % length of plate in x direction
+Ly = (1/r)*LP;         % length of plate in y direction
 LS = 1;               % lenght of the string
 LB = 1;                 % lenght of the bridge
 durration = 3;          % synthesised sound lenght in seconds
@@ -65,23 +66,10 @@ D = EP*HP^3 / (12 * (1 - nu^2)); % plate flexural rigidity pg.331
 kappaPsq = D / (rhoP * HP * Lx^2 * Ly^2); % pg.332 eq.12.3 kappa^2
 
 
-% zeta0,1  pg.189 Practical setting for decay times
-% sigma0,1 pg.189 eq.7.29
-% set scheme for loss parameters for String
-% zetaS1 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(1,1))^2))/(2*kappaS^2);
-% zetaS2 = (-gammaS^2+sqrt(gammaS^4+4*kappaS^2*(2*pi*lossS(2,1))^2))/(2*kappaS^2);
 sigmaS0 = 1.378027748373650;
-% 6*log(10)*(-zetaS2/lossS(1,2)+zetaS1/lossS(2,2))/(zetaS1-zetaS2);
 sigmaS1 = 3.570213734102943e-03;
-% 6*log(10)*(1/lossS(1,2)-1/lossS(2,2))/(zetaS1-zetaS2);
-% set scheme for loss parameters for Plate
-% zetaP1 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(1,1))^2))/(2*kappaPsq);
-% zetaP2 = (-gammaP^2+sqrt(gammaP^4+4*kappaPsq*(2*pi*lossP(2,1))^2))/(2*kappaPsq);
 sigmaP0 = 1.378062296963499*2;
-% 6*log(10)*(-zetaP2/lossP(1,2)+zetaP1/lossP(2,2))/(zetaP1-zetaP2);
 sigmaP1 = 0.096055930949692*2;
-% 6*log(10)*(1/lossP(1,2)-1/lossP(2,2))/(zetaP1-zetaP2);
-% loss parameters for Bar
 sigmaB0 =  1.343;
 sigmaB1 =  0.00459;
 
@@ -167,10 +155,10 @@ uPPrevlMult = ((8*sigmaP1*k^2)/(k*hP^2) + k*sigmaP0 - 1)/(k*sigmaP0 + 1);
 uPPrevl1Mult = ((-2*sigmaP1*k^2)/(k*hP^2))/(k*sigmaP0 + 1);
 
 % Forces
-Fs1bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS1*hS1 * (sigmaS0 + 1)));
-Fs2bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS2*hS2 * (sigmaS0 + 1)));
-Fs3bMult = 1/(1/(rhoB*AreaB*hB * (sigmaB0 + 1)) + 1/(rhoS*AreaS3*hS3 * (sigmaS0 + 1)));
-FbpMult = 1/(-1/(rhoB*AreaB*hB * (sigmaB0 + 1)) - 1/(rhoP*HP*hP^2 * (sigmaP0 + 1)));
+Fs1bMult = 1/(-k^2/(rhoB*AreaB*hB * (sigmaB0*k + 1)) - k^2/(rhoS*AreaS1*hS1 * (sigmaS0*k + 1)));
+Fs2bMult = 1/(-k^2/(rhoB*AreaB*hB * (sigmaB0*k + 1)) - k^2/(rhoS*AreaS2*hS2 * (sigmaS0*k + 1)));
+Fs3bMult = 1/(-k^2/(rhoB*AreaB*hB * (sigmaB0*k + 1)) - k^2/(rhoS*AreaS3*hS3 * (sigmaS0*k + 1)));
+FbpMult = 1/(-k^2/(rhoB*AreaB*hB * (sigmaB0*k + 1)) - k^2/(rhoP*HP*hP^2 * (sigmaP0*k + 1)));
 if shamisenString == 1
     frettingpos = [0,4,8,13,17,21,24,27,30,33,36,39,41,43,45,47,49,51,53,55,56,58,59,60,61,63,64,65];   %1st string
     noteName = ["C4","Db4","D4","Eb4","E4","F4","Gb4","G4","Ab4","A4","Bb4","B4","C5","Db5","D5"...
@@ -206,7 +194,7 @@ if shamisenString == 1
     width = round(NS1/10);
     excitationRange = 1:width;
 %     uS1(excitationRange + floor((NS1*5)/(pi*6))) = hann(width);
-    uS1(excitationRange + floor(NS1/2)) = hann(width);
+    uS1(excitationRange + floor(NS1/2)) = 0.001*hann(width);
     lS1 = 3+(0):NS1-2-(frettingpos(i));
     lS2 = 3+(0):NS2-2-(0);
     lS3 = 3+(0):NS3-2-(0);
@@ -217,7 +205,7 @@ uS2 = zeros(NS2,1);
 if shamisenString == 2
     width = round(NS2/10);
     excitationRange = 1:width;
-    uS2(excitationRange + floor((NS2*5)/(pi*6))) = hann(width);
+    uS2(excitationRange + floor((NS2*5)/(pi*6))) = 0.001*hann(width);
     lS1 = 3+(0):NS1-2-(0);
     lS2 = 3+(0):NS2-2-(frettingpos(i));
     lS3 = 3+(0):NS3-2-(0);
@@ -228,7 +216,7 @@ uS3 = zeros(NS3,1);
 if shamisenString == 3
     width = round(NS3/10);
     excitationRange = 1:width;
-    uS3(excitationRange + floor((NS3*5)/(pi*6))) = hann(width);
+    uS3(excitationRange + floor((NS3*5)/(pi*6))) = 0.001*hann(width);
     lS1 = 3+(0):NS1-2-(0);
     lS2 = 3+(0):NS2-2-(0);
     lS3 = 3+(0):NS3-2-(frettingpos(i));
@@ -240,8 +228,6 @@ uS3Prev = uS3;
 uPNext = zeros(Nx,Ny);
 uP = zeros(Nx,Ny);
 uPPrev = zeros(Nx,Ny);
-% uP(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8),ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)) = ... here plate is excited by velocity
-%     k*vP0*hamming_3d(length(ceil(Nx/2-Nx/8):floor(Nx/2+Nx/8)),length(ceil(Ny/2-Ny/8):floor(Ny/2+Ny/8)),1);
 outPosP = [floor(2*Nx/(pi)) floor(Ny/(pi))];
 outPosB = floor(2*NB/pi);
 outPosS1 =floor((2*NS1)/(pi*7))+4;
@@ -306,11 +292,11 @@ for n = 1:dur
     
 %% Calculate the forces
     % Force from the Strings to the bridge
-    Fs1b = Fs1bMult * (-uBNext(lBc1) + uS1Next(lS1c));
+    Fs1b = Fs1bMult * (uBNext(lBc1) - uS1Next(lS1c));
         
-    Fs2b = Fs2bMult * (-uBNext(lBc2) + uS2Next(lS2c));
+    Fs2b = Fs2bMult * (uBNext(lBc2) - uS2Next(lS2c));
     
-    Fs3b = Fs3bMult * (-uBNext(lBc3) + uS3Next(lS3c));
+    Fs3b = Fs3bMult * (uBNext(lBc3) - uS3Next(lS3c));
     
     % Force from bridge' left and right mounting points to the plate
     Fbpl = FbpMult*(-uBNext(lBcl) + uPNext(lPcl, mPcl));
@@ -320,26 +306,26 @@ for n = 1:dur
     
 %% Update equations at localizer points
     % Update Strings equation at the localizer point with Fsm (Force loss to the bridge)
-    uS1Next(lS1c) = uS1Next(lS1c) - Fs1b/(rhoS * AreaS1 *hS1 * (sigmaS0 + 1));
-    uS2Next(lS2c) = uS2Next(lS2c) - Fs2b/(rhoS * AreaS2 *hS2 * (sigmaS0 + 1));
-    uS3Next(lS3c) = uS3Next(lS3c) - Fs3b/(rhoS * AreaS3 *hS3 * (sigmaS0 + 1));
+    uS1Next(lS1c) = uS1Next(lS1c) - Fs1b*k^2/(rhoS * AreaS1 *hS1 * (sigmaS0*k + 1));
+    uS2Next(lS2c) = uS2Next(lS2c) - Fs2b*k^2/(rhoS * AreaS2 *hS2 * (sigmaS0*k + 1));
+    uS3Next(lS3c) = uS3Next(lS3c) - Fs3b*k^2/(rhoS * AreaS3 *hS3 * (sigmaS0*k + 1));
         
 
     % Update Bar function at the localizer point with Fs1b (Force gain from the string 1)
-    uBNext(lBc1) = uBNext(lBc1) + Fs1b/(rhoB * AreaB *hB * (sigmaB0 + 1));
+    uBNext(lBc1) = uBNext(lBc1) + Fs1b*k^2/(rhoB * AreaB *hB * (sigmaB0*k + 1));
     % Update Bar function at the localizer point with Fs2b (Force gain from the string 2)
-    uBNext(lBc2) = uBNext(lBc2) + Fs2b/(rhoB * AreaB *hB * (sigmaB0 + 1));
+    uBNext(lBc2) = uBNext(lBc2) + Fs2b*k^2/(rhoB * AreaB *hB * (sigmaB0*k + 1));
     % Update Bar function at the localizer point with Fs3b (Force gain from the string 3)
-    uBNext(lBc3) = uBNext(lBc3) + Fs3b/(rhoB * AreaB *hB * (sigmaB0 + 1));
+    uBNext(lBc3) = uBNext(lBc3) + Fs3b*k^2/(rhoB * AreaB *hB * (sigmaB0*k + 1));
     % Update Bar function at the localizer point lBl with Fbp (Force gain from the string 1)
-    uBNext(lBcl) = uBNext(lBcl) - Fbpl/(rhoB * AreaB *hB * (sigmaB0 + 1));
+    uBNext(lBcl) = uBNext(lBcl) - Fbpl*k^2/(rhoB * AreaB *hB * (sigmaB0*k + 1));
     % Update Bar function at the localizer point lBr with Fbp (Force gain from the string 1)
-    uBNext(lBcr) = uBNext(lBcr) - Fbpr/(rhoB * AreaB *hB * (sigmaB0 + 1));
+    uBNext(lBcr) = uBNext(lBcr) - Fbpr*k^2/(rhoB * AreaB *hB * (sigmaB0*k + 1));
 
 
     % Update Plate function at the localizer points with Fbp (Force gain from the bridge)
-    uPNext(lPcl,mPcl) = uPNext(lPcl,mPcl) + Fbpl/(rhoP*HP*hP^2*(sigmaP0 + 1));
-    uPNext(lPcr,mPcr) = uPNext(lPcr,mPcr) + Fbpr/(rhoP*HP*hP^2*(sigmaP0 + 1));
+    uPNext(lPcl,mPcl) = uPNext(lPcl,mPcl) + Fbpl*k^2/(rhoP*HP*hP^2*(sigmaP0*k + 1));
+    uPNext(lPcr,mPcr) = uPNext(lPcr,mPcr) + Fbpr*k^2/(rhoP*HP*hP^2*(sigmaP0*k + 1));
  %% plot    
 %     variable = uPNext;     
 %     subplot(9,1,1);
