@@ -9,7 +9,7 @@ k = 1/fs;               % time step
 TS1 = 14.15*9.8;          % applied string tension https://mk0larsenstringsti68.kinstacdn.com/wp-content/uploads/2018/12/Larsen-String-Tension-Charts-18.pdf
 TS2 = 14.85*9.8;          % applied string tension
 TS3 = 14.36*9.8;          % applied string tension
-TP = 400;            % applied plate tension
+TP = 4000;            % applied plate tension
 rhoS = 1156.48151991993;% material density of the string                        
                         % "Handbook of Fiber Chemistry", Menachem Lewin, Editor, 2nd ed.,1998, Marcel Dekker, pp. 438–441, ISBN 0-8247-9471-0
                         % "ENGINEERING PROPERTIES OF SPIDER SILK"  http://web.mit.edu/course/3/3.064/www/slides/Ko_spider_silk.pdf    
@@ -17,8 +17,8 @@ rhoP = 1150;            % nylon https://www.engineeringtoolbox.com/engineering-m
 HP = 0.0002;             % plate thickness         
 EP = 3e+9;              % nylon https://www.engineeringtoolbox.com/engineering-materials-properties-d_1225.html
 nu = 0.4;               % Poisson’s ratio nu < 0.5
-r = 1.3;                % grid aspect ratio
-LP = 0.4;
+r = 1;                % grid aspect ratio
+LP = 1;
 Lx = r*LP;             % length of plate in x direction
 Ly = (1/r)*LP;         % length of plate in y direction
 LS = 1;               % lenght of the string
@@ -28,13 +28,13 @@ dur = fs*durration;     % synthesised sound lenght in samples
 lossS = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 lossP = [100, 10; 1000, 8]; % loss [freq.(Hz), T60(s), freq.(Hz), T60(s)]
 vP0 = -20;            % initial velocity of a plate
-rhoB = 1190;             % material density
+rhoB = 500;             % material density
 AreaS1 = 0.00000054129; % string cross sectional area  
 AreaS2 = 2.52473376e-7; % string cross sectional area
 AreaS3 = 1.398451e-7; % string cross sectional area
 AreaB = 2.02e-4;        % bridge cross sectional area
 % EB = 9.5e+9;            % Young's modulus dried Red Alder https://amesweb.info/Materials/Youngs-Modulus-of-Wood.aspx
-EB = 3.2e+9;            % Young's modulus acrylic https://www.engineeringtoolbox.com/young-modulus-d_417.html
+EB = 9.5e+9;            % Young's modulus acrylic https://www.engineeringtoolbox.com/young-modulus-d_417.html
 HB = 0.0075;             % thickness
 rS1 = sqrt(AreaS1/pi);  % string1 radius
 rS2 = sqrt(AreaS2/pi);  % string2 radius
@@ -149,10 +149,17 @@ uBPrevl1Mult = (-2*sigmaB1*k)/(hB^2*(k*sigmaB0 + 1));
 % Plate
 uPlMult = ((-20*kappaPsq/hP^4 - 4*gammaP^2/hP^2 - 8*sigmaP1/(k*hP^2))*k^2 + 2)/(k*sigmaP0 + 1); 
 uPl1Mult = (8*kappaPsq/hP^4 + gammaP^2/hP^2 + 2*sigmaP1/(k*hP^2))*k^2/(k*sigmaP0 + 1);
-uPl1dMult = (-2*kappaPsq*k^2)/(hP^4)/(k*sigmaP0 + 1);
+uPl1dMult = ((-2*kappaPsq*k^2)/(hP^4))/(k*sigmaP0 + 1);
 uPl2Mult = (-1*kappaPsq*k^2)/(hP^4)/(k*sigmaP0 + 1);
 uPPrevlMult = ((8*sigmaP1*k^2)/(k*hP^2) + k*sigmaP0 - 1)/(k*sigmaP0 + 1);
 uPPrevl1Mult = ((-2*sigmaP1*k^2)/(k*hP^2))/(k*sigmaP0 + 1);
+
+A1=uPlMult;
+A2 = uPl1Mult;
+A3 = uPl1dMult;
+A4 = uPl2Mult;
+A5 = uPPrevlMult;
+A6 = uPPrevl1Mult;
 
 % Forces
 Fs1bMult = 1/(-k^2/(rhoB*AreaB*hB * (sigmaB0*k + 1)) - k^2/(rhoS*AreaS1*hS1 * (sigmaS0*k + 1)));
